@@ -1,8 +1,8 @@
-# mouse_locomotion
-Blender model and simulation scripts for mouse locomotion driven by reservoir computing
+# Mouse Locomotion Simulation
+This repository proposes a Blender model and some simulation scripts for mouse locomotion driven by reservoir computing.
 
 ### Running on Ubuntu 14.04
-This installation has been tested with Ubuntu 14.04 only but should work for other OS since Blender is a multi-platform tool.
+Installation has been tested with Ubuntu 14.04 only but should work for other OS since Blender is a multi-platform tool.
 - Install Blender:
 ```
 sudo apt-get install blender
