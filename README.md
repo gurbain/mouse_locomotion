@@ -21,4 +21,4 @@ blender cheesy.blend
 ```
 
 ### Editing
-An overview of the simulation process can be found in **architecture.jpg**. The init.py and main.py scripts are started from the blender object **obj_head**
+An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
