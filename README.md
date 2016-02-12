@@ -8,17 +8,21 @@ Installation has been tested with Ubuntu 14.04 only but should work for other OS
 sudo apt-get install blender
 ```
 This code has also been tested with Blender 2.70 manually compiled and Python 3. More information about manual building here: http://wiki.blender.org/index.php/Dev:Doc/Building_Blender
-
 - Import the model:
 ```
 git clone https://github.com/Gabs48/mouse_locomotion
 ```
+- Run the model:
+```
+cd mouse_locomotion
+blender -b cheesy.blend --python start.py
+```
+As the view is not set, nothing appears in the GUI that opens but the simulation runs in the background and should ouput stuff in the shell. The simulation can also be runned inside the blender software, by placing the cursor on the 3D view and pressing the keyboard key 'p'.
 
-- Open the model:
+### Editing
+To edit the model, just open it in Blender:
 ```
 cd mouse_locomotion
 blender cheesy.blend
 ```
-
-### Editing
-An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
+To edit the controls, open the Python scripts in your IDE. An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
