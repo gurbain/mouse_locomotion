@@ -20,9 +20,9 @@ blender -b cheesy.blend --python start.py
 As the view is not set, nothing appears in the GUI that opens but the simulation runs in the background and should ouput stuff in the shell. The simulation can also be runned inside the blender software, by placing the cursor on the 3D view and pressing the keyboard key 'p'.
 
 ### Editing
-To edit the model, just open it in Blender:
+- To edit the model, just open it in Blender:
 ```
 cd mouse_locomotion
 blender cheesy.blend
 ```
-To edit the controls, open the Python scripts in your IDE. An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
+- To edit the controls, open the Python scripts in your IDE. An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
