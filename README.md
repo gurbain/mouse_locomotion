@@ -12,7 +12,7 @@ This code has also been tested with Blender 2.70 manually compiled and Python 3.
 ```
 git clone https://github.com/Gabs48/mouse_locomotion
 ```
-- Run the model:
+- Run the simulation:
 ```
 cd mouse_locomotion
 blender -b cheesy.blend --python start.py
