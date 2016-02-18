@@ -16,4 +16,4 @@ owner = controller.owner
  
 # Initialize variables here
 owner["n_iter"] = 0
-owner["cheesy"] = Mouse(scene, controller)
+owner["cheesy"] = Body(scene, controller, "cheesy")

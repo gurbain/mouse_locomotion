@@ -143,7 +143,7 @@ class DampedSpringMuscle:
 	"This class implements a simple muscle composed by a spring and a damping in parallel"
 
 	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=600, c_=30):
+		name_="undefined muscle", k_=500, c_=100):
 		"Class initialization. Requires scene, controller as well as two object and the local point of application \
 		of the spring forces"
 
@@ -200,7 +200,6 @@ class DampedSpringMuscle:
 
 		# compute spring force
 		force_s = - (self.k * (self.l.length - self.l0 )) * self.l.normalized()
-		print("l normalized: " + str(self.l.normalized()))
 
 		# compute damping force
 		force_d = - self.c * self.v_norm
@@ -215,7 +214,7 @@ class DampedSpringMuscle:
 		
 		# Print iteration debug
 		self.n_iter += 1
-		print("[DEBUG] Spring iteration " + str(self.n_iter) + ":\tForce = " +  str(force))
+		print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ":\tForce = " +  str(force))
 		print("\t\t\tFs = " +  str(force_s))
 		print("\t\t\tFd = " + str(force_d))
 		print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
@@ -226,7 +225,7 @@ class DampedSpringMuscle:
 class Muscle(DampedSpringMuscle):
 
 	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=600, c_=30):
+		name_="undefined muscle", k_=500, c_=100):
 		"Class initialization"
 		
 		super().__init__(scene_, controller_, obj1_, obj2_, app_point_1_, app_point_2_, name_, k_, c_)

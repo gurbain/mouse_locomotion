@@ -18,7 +18,7 @@ class Leg:
 		"Update control signals and forces"
 		
 		self.n_iter += 1
-		print("[DEBUG] Leg iteration: " + str(self.n_iter))
+		#print("[DEBUG] Leg iteration: " + str(self.n_iter))
 
 
 class Backleg(Leg):
@@ -33,7 +33,7 @@ class Backleg(Leg):
 		# Bones objects
 		self.tarsus =  self.scene.objects["obj_shin_lower." + self.orien]
 		self.tibia =  self.scene.objects["obj_shin." + self.orien]
-		self.femur =  self.scene.objects["obj_shin_lower." + self.orien]
+		self.femur =  self.scene.objects["obj_thigh." + self.orien]
 
 		# Muscle LOCAL anchors position
 		self.biceps_femur_anch = vec((0, 0, 0))
@@ -43,11 +43,11 @@ class Backleg(Leg):
 
 		# Muscles
 		self.biceps = Muscle(self.scene, self.controller, self.femur, self.tibia, \
-			self.biceps_femur_anch, self.biceps_tibia_anch, "biceps")
+			self.biceps_femur_anch, self.biceps_tibia_anch, "B_biceps." + self.orien, 1000, 100)
 		self.gastrocnemius =  Muscle(self.scene, self.controller, self.tibia, self.tarsus, \
-			self.gastro_tibia_anch, self.gastro_tarsus_anch, "gastrocnemius")
+			self.gastro_tibia_anch, self.gastro_tarsus_anch, "B_gastrocnemius." + self.orien,  10, 2)
 
-	def update_mvt(self, ctrl_sig_):
+	def update_mvt(self, ctrl_sig_=None):
 		"Update control signals and forces"
 		
 		if ctrl_sig_ != None:
@@ -58,7 +58,7 @@ class Backleg(Leg):
 		self.gastrocnemius.update()
 		
 		self.n_iter += 1
-		print("[DEBUG] Backleg iteration: " + str(self.n_iter))
+		print("[DEBUG] Backleg " + self.orien + " iteration: " + str(self.n_iter))
 
 
 class Foreleg(Leg):
@@ -83,9 +83,9 @@ class Foreleg(Leg):
 
 		# Muscles
 		self.biceps = Muscle(self.scene, self.controller, self.humerus, self.radius, \
-			self.biceps_humerus_anch, self.biceps_radius_anch, "biceps")
+			self.biceps_humerus_anch, self.biceps_radius_anch, "F_biceps." + self.orien, 1000, 100)
 		self.triceps =  Muscle(self.scene, self.controller, self.radius, self.carpus, \
-			self.triceps_radius_anch, self.triceps_carpus_anch, "triceps")
+			self.triceps_radius_anch, self.triceps_carpus_anch, "F_triceps." + self.orien, 10, 2)
 
 	def update_mvt(self, ctrl_sig_=None):
 		"Update control signals and forces"
@@ -98,18 +98,19 @@ class Foreleg(Leg):
 		self.triceps.update()
 
 		self.n_iter += 1
-		print("[DEBUG] Foreleg iteration: " + str(self.n_iter))
+		print("[DEBUG] Foreleg " + self.orien + " iteration: " + str(self.n_iter))
 
 
-class Mouse:
+class Body:
 	"This class represents the mouse body and its current behaviour in the control process"
 
-	def __init__(self, scene_, controller_):
+	def __init__(self, scene_, controller_, name_="mouse"):
 		"Class initialization"
 		
 		self.n_iter = 0
 		self.scene = scene_
 		self.controller = controller_
+		self.name = name_
 		self.l_fo_leg = Foreleg(scene_, controller_, "L")
 		self.r_fo_leg = Foreleg(scene_, controller_, "R")
 		self.l_ba_leg = Backleg(scene_, controller_, "L")
@@ -120,10 +121,10 @@ class Mouse:
 		"Update control signals and forces"
 		
 		self.brain.update_sig() # iterate for new control signal
-		self.l_fo_leg.update_mvt(0) # give the control signal
-		self.r_fo_leg.update_mvt(0) # give the control signal
-		self.l_ba_leg.update_mvt(0) # give the control signal
-		self.r_ba_leg.update_mvt(0) # give the control signal
+		self.l_fo_leg.update_mvt() # give the control signal
+		self.r_fo_leg.update_mvt() # give the control signal
+		self.l_ba_leg.update_mvt() # give the control signal
+		self.r_ba_leg.update_mvt() # give the control signal
 		
 		self.n_iter += 1
-		print("[DEBUG] Mouse iteration: " + str(self.n_iter))
+		print("[DEBUG] Body " + self.name + " iteration: " + str(self.n_iter))

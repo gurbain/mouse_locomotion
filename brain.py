@@ -42,12 +42,13 @@ class Matsuoka:
 class Brain:
 	"This class represents the mouse brain and its current behaviour in the control process"
 
-	def __init__(self, scene_, controller_):
+	def __init__(self, scene_, controller_, name_="dull_brain"):
 		"Class initialization"
 		
 		self.n_iter = 0
 		self.scene = scene_
 		self.controller = controller_
+		self.name = name_
 		self.oscillator = Matsuoka()
 
 	def update_sig(self):
@@ -55,4 +56,4 @@ class Brain:
 		
 		self.oscillator.update_sig()
 		self.n_iter += 1
-		print("Brain iteration: " + str(self.n_iter))
+		print("[DEBUG] Brain " + self.name + " iteration: " + str(self.n_iter))
