@@ -1,0 +1,6 @@
+# Ignore python compiled files
+__pycache__/
+
+# Ignore autosave from blender
+robot.blend1
+cheesy.blend1
