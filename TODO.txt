@@ -1,0 +1,11 @@
+Todo:
+
+- Control bone separately with random forces
+- Generate signal from brain controller
+- Write transfer functions to apply force in center of gravity
+- Implement Hill muscle Model (find one on internet)
+- Connect muscles to bones
+- Design framework for muscle, anchors and oscillators parameters optimization (find how to speed up, how to run on cluster)
+- Add feedback in the model (See force and position  feedback here: https://developer.blender.org/T35460)
+- Replace oscillator with neural net (Karsten)
+- Add feedback to oscillator

@@ -7,7 +7,7 @@ Installation has been tested with Ubuntu 14.04 only but should work for other OS
 ```
 sudo apt-get install blender
 ```
-This code has also been tested with Blender 2.70 manually compiled and Python 3. More information about manual building here: http://wiki.blender.org/index.php/Dev:Doc/Building_Blender
+This code has also been tested with Blender 2.76 manually compiled and Python 3. More information about manual building here: http://wiki.blender.org/index.php/Dev:Doc/Building_Blender
 - Import the model:
 ```
 git clone https://github.com/Gabs48/mouse_locomotion

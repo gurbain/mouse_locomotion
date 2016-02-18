@@ -55,4 +55,4 @@ class Brain:
 		
 		self.oscillator.update_sig()
 		self.n_iter += 1
-		print("Brain iteration: " + str(self.n_iter)) 
+		print("Brain iteration: " + str(self.n_iter))
