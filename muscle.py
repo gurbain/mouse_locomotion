@@ -1,3 +1,16 @@
+##
+# Mouse Locomotion Simulation
+# 
+# This project provides the user with a framework based on Blender allowing:
+#  - Creation and edition of a 3D model
+#  - Design of a artificial neural network controller
+#  - Offline optimization of the body parameters
+#  - Online optimization of the brain controller
+# 
+# Copyright Gabriel Urbain <gabriel.urbain@ugent.be>. February 2016
+# Data Science Lab - Ghent University. Human Brain Project SP10
+##
+
 import bge
 import numpy as np
 from mathutils import Vector as vec
@@ -54,7 +67,7 @@ class HillMuscle:
 		self.SEE_KSEEl = self.SEE_DeltaF_SEE0 / (self.SEE_DeltaU_SEEl * self.SEE_l_SEE0)
 
 
-	def update_mvt(self, ctrl_sig):
+	def update(self, ctrl_sig):
 		"Update control signals and forces"
 
 		# Here, we update the muscle forces given geometry and control signal
@@ -143,7 +156,7 @@ class DampedSpringMuscle:
 	"This class implements a simple muscle composed by a spring and a damping in parallel"
 
 	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=500, c_=100):
+		name_="undefined muscle", k_=500, c_=100, k_cont_=1):
 		"Class initialization. Requires scene, controller as well as two object and the local point of application \
 		of the spring forces"
 
@@ -173,20 +186,24 @@ class DampedSpringMuscle:
 		# Model constants and variables
 		self.k = k_; # scalar in N/m
 		self.c = c_; # scalar in N/m
+		self.k_cont = k_cont_ # no dimension
 		self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
 		self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
 		self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
 		v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
 		self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
 		self.l0 = self.l.length; # scalar in m
+		self.l_cont = self.l0; # scalar in m
 
-	def update(self, l0_=None):
+	def update(self, ctrl_sig=None):
 		"Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
 		fixing manually l0"
 
 		# get control length
-		if l0_ != None:
-			self.l0 = l0_
+		if ctrl_sig == None:
+			self.l_cont = self.l0 # by default, control length is the spring reference length
+		else:
+			self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
 
 		# get length and velocity
 		self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
@@ -199,7 +216,7 @@ class DampedSpringMuscle:
 		#print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
 
 		# compute spring force
-		force_s = - (self.k * (self.l.length - self.l0 )) * self.l.normalized()
+		force_s = - (self.k * (self.l.length - self.l_cont) ) * self.l.normalized()
 
 		# compute damping force
 		force_d = - self.c * self.v_norm
@@ -214,7 +231,7 @@ class DampedSpringMuscle:
 		
 		# Print iteration debug
 		self.n_iter += 1
-		print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ":\tForce = " +  str(force))
+		print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force))
 		print("\t\t\tFs = " +  str(force_s))
 		print("\t\t\tFd = " + str(force_d))
 		print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
@@ -225,7 +242,7 @@ class DampedSpringMuscle:
 class Muscle(DampedSpringMuscle):
 
 	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=500, c_=100):
+		name_="undefined muscle", k_=500, c_=100, k_cont_=1):
 		"Class initialization"
 		
-		super().__init__(scene_, controller_, obj1_, obj2_, app_point_1_, app_point_2_, name_, k_, c_)
+		super().__init__(scene_, controller_, obj1_, obj2_, app_point_1_, app_point_2_, name_, k_, c_, k_cont_)
