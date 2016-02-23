@@ -122,7 +122,6 @@ class Body:
 		self.brain = Brain(scene_, config_)
 
 		# Create the muscles objects following config
-		self.body = self.scene.objects["obj_body"]
 		self.muscles = []
 		for muscle_config in self.config.body["muscles"]:
 			self.muscles.append(Muscle(self.scene, muscle_config))

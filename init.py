@@ -30,7 +30,7 @@ owner = controller.owner
  
 # Create python model/controller
 owner["n_iter"] = 0
-owner["config"] = RobotDefConfig()
+owner["config"] = RobotVertDefConfig()
 owner["cheesy"] = Body(scene, owner["config"])
 
 # Set simulation parameters
