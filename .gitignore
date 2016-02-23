@@ -6,4 +6,4 @@ robot.blend1
 cheesy.blend1
 
 # Ignore savec simulations
-savec_sim/*
+saved_sim/*
