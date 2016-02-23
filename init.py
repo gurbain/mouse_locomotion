@@ -13,6 +13,7 @@
 
 import bge
 from body import *
+from config import *
 
 print("####################################")
 print("##   Mouse Locomotion Simulation   #")
@@ -27,6 +28,10 @@ scene = bge.logic.getCurrentScene()
 keyboard = bge.logic.keyboard
 owner = controller.owner
  
-# Initialize variables here
+# Create python model/controller
 owner["n_iter"] = 0
-owner["cheesy"] = Body(scene, controller, "cheesy")
+owner["config"] = RobotDefConfig()
+owner["cheesy"] = Body(scene, owner["config"])
+
+# Set simulation parameters
+bge.logic.setTimeScale(owner["config"].sim_speed)

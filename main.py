@@ -12,6 +12,9 @@
 ##
 
 import bge
+import datetime
+import os
+import pickle
 
 # Get BGE handles
 controller = bge.logic.getCurrentController()
@@ -19,28 +22,33 @@ owner = controller.owner
 exit_actuator = bge.logic.getCurrentController().actuators['quit_game']
 keyboard = bge.logic.keyboard
 
+def save():
+	dirname = "saved_sim"
+	filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".config"
 
-# DEBUG Control the muscle length from keyboard
-if bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.UPARROWKEY]:
-	owner["cheesy"].l_fo_leg.biceps.l0 -= 0.02
-	owner["cheesy"].r_fo_leg.biceps.l0 -= 0.02
-if bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.DOWNARROWKEY]:
-	owner["cheesy"].l_fo_leg.biceps.l0 += 0.02
-	owner["cheesy"].r_fo_leg.biceps.l0 += 0.02
-if bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.LEFTARROWKEY]:
-	owner["cheesy"].l_ba_leg.biceps.l0 -= 0.02
-	owner["cheesy"].r_ba_leg.biceps.l0 -= 0.02
-if bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.RIGHTARROWKEY]:
-	owner["cheesy"].l_ba_leg.biceps.l0 += 0.02
-	owner["cheesy"].r_ba_leg.biceps.l0 += 0.02
+	if not os.path.exists(dirname):
+		os.makedirs(dirname)
+	f = open(dirname + "/" + filename, 'wb')
+	pickle.dump(owner["config"], f)
+	f.close()
+
 
 # Time-step update instructions
+owner["cheesy"].update()
+
+
+# DEBUG control and display
 owner["n_iter"] += 1
-owner["cheesy"].update_mvt()
-print("[DEBUG] Main iteration: " + str(owner["n_iter"]))
+if owner["config"].debug:
+	print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " + str(eval(owner["config"].exit_condition)))
 
-# When condition encountered, stop the simulation
-if owner['n_iter'] > 1000:
 
-	# save bge.logic.globalDict
+# Simulation interruption
+if eval(owner["config"].exit_condition) or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
+
+	# save config
+	if owner["config"].save:
+		save()
+
+	# exit
 	controller.activate(exit_actuator)

@@ -20,13 +20,13 @@ import math
 class HillMuscle:
 	"This class implements Hill Model for muscle force "
 	
-	def __init__(self, scene_, controller_):
+	def __init__(self, scene_, params_):
 		"Class initialization. Parameters can be found in D.F.B. Haeufle, M. Günther, A. Bayer, S. Schmitt (2014) \
 		Hill-type muscle model with serial damping and eccentric force-velocity relation. Journal of Biomechanics"
 		
 		self.n_iter = 0
 		self.scene = scene_
-		self.controller = controller_
+		self.params = params_
 		
 		## Contractile Element (CE)
 		self.CE_F_max = 1420 				# F_max in [N] for Extensor (Kistemaker et al., 2006)
@@ -72,7 +72,7 @@ class HillMuscle:
 
 		# Here, we update the muscle forces given geometry and control signal
 		self.n_iter += 1
-		print("Muscle iteration: " + str(self.n_iter))
+		# print("Muscle iteration: " + str(self.n_iter))
 
 
 	def update(self, l_CE, l_MTC, dot_l_MTC, q):
@@ -155,45 +155,54 @@ class HillMuscle:
 class DampedSpringMuscle:
 	"This class implements a simple muscle composed by a spring and a damping in parallel"
 
-	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=500, c_=100, k_cont_=1):
+	def __init__(self, scene_, params_):
 		"Class initialization. Requires scene, controller as well as two object and the local point of application \
 		of the spring forces"
 
 		self.n_iter = 0
 		self.scene = scene_
-		self.controller = controller_
-		self.name = name_
+		self.params = params_
+		self.name = self.params["name"]
+		self.debug = self.params["debug"]
 
 		# Objects
-		assert (obj1_ != None),"[CRITIC] Muscle " + self.name + " first extremity is not connected to any object!"
-		assert (obj1_ != None),"[CRITIC] Muscle " + self.name + " second extremity is not connected to any object!"
-		self.obj1 = obj1_
-		self.obj2 = obj2_
+		assert (self.scene.objects[self.params["obj_1"]] != None), \
+			"[CRITIC] Muscle " + self.name + " first extremity is not connected to any object!"
+		assert (self.scene.objects[self.params["obj_2"]] != None),\
+			"[CRITIC] Muscle " + self.name + " second extremity is not connected to any object!"
+		self.obj1 = self.scene.objects[self.params["obj_1"]]
+		self.obj2 = self.scene.objects[self.params["obj_2"]]
 
 		# Points of application in local coordinates
-		if app_point_1_ == None:
+		if self.params["anch_1"] == None:
 			print("[DANGER] You have not defined the first application point of muscle " + self.name + \
 				"! Center is taken by default. This may results in erroneous simulation")
-			app_point_1_ = vec((0.0, 0.0, 0.0))
-		if app_point_2_ == None:
+			self.params["anch_1"] = [0.0, 0.0, 0.0]
+		if self.params["anch_2"] == None:
 			print("[DANGER] You have not defined the second application point of muscle " + self.name + \
 				"! Center is taken by default. This may results in erroneous simulation")
-			app_point_2_ = vec((0.0, 0.0, 0.0))
-		self.app_point_1 = app_point_1_
-		self.app_point_2 = app_point_2_
+			self.params["anch_2"] = [0.0, 0.0, 0.0]
+		self.app_point_1 = vec((self.params["anch_1"]))
+		self.app_point_2 = vec((self.params["anch_2"]))
 
 		# Model constants and variables
-		self.k = k_; # scalar in N/m
-		self.c = c_; # scalar in N/m
-		self.k_cont = k_cont_ # no dimension
+		self.k = self.params["k"]; # scalar in N/m
+		self.c = self.params["c"]; # scalar in N/m
+		self.k_cont = self.params["kc"] # no dimension
 		self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
 		self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
 		self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
 		v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
 		self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
-		self.l0 = self.l.length; # scalar in m
+		self.l0 = self.params["kl0"] * self.l.length; # scalar in m
 		self.l_cont = self.l0; # scalar in m
+
+	def draw_muscle(self, color_=[256,0,0]):
+		bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
+
+	def compute_step_energy(self):
+
+		return 0
 
 	def update(self, ctrl_sig=None):
 		"Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
@@ -225,24 +234,28 @@ class DampedSpringMuscle:
 		force = force_s + force_d
 		impulse = force / bge.logic.getLogicTicRate()
 
-		# apply impusle on an object point
-		self.obj1.applyImpulse(self.app_point_1_world, - impulse)
-		self.obj2.applyImpulse(self.app_point_2_world, impulse)
+		# apply impusle on an object point only in traction
+		if float((force * self.l.normalized())) < 0.0:
+			self.obj1.applyImpulse(self.app_point_1_world, - impulse)
+			self.obj2.applyImpulse(self.app_point_2_world, impulse)
 		
-		# Print iteration debug
+		# DEBUG data
+		self.draw_muscle()
 		self.n_iter += 1
-		print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force))
-		print("\t\t\tFs = " +  str(force_s))
-		print("\t\t\tFd = " + str(force_d))
-		print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
-		print("\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" +  str(self.app_point_2_world))
-		print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" +  str(self.app_point_2))
+
+		if self.debug:
+			print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
+				+ str(force * self.l.normalized()) + "N")
+			print("\t\t\tFs = " +  str(force_s))
+			print("\t\t\tFd = " + str(force_d))
+			print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
+			print("\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" +  str(self.app_point_2_world))
+			print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" +  str(self.app_point_2))
 
 
 class Muscle(DampedSpringMuscle):
 
-	def __init__(self, scene_, controller_, obj1_=None, obj2_=None, app_point_1_=None, app_point_2_=None, \
-		name_="undefined muscle", k_=500, c_=100, k_cont_=1):
+	def __init__(self, scene_, params_):
 		"Class initialization"
 		
-		super().__init__(scene_, controller_, obj1_, obj2_, app_point_1_, app_point_2_, name_, k_, c_, k_cont_)
+		super().__init__(scene_, params_)

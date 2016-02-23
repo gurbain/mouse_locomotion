@@ -1,13 +1,13 @@
 Todo:
 
-- More plausible muscle placement
-- Design a good controller fwithout focusing too much on placement
+- More plausible muscle placement (~~done)
+- Design a good controller without focusing too much on placement
 
+- Increase sim rate (enabled from Blender 2.77 -http://download.blender.org/release/Blender2.77/- with bge.logic.setTimeScale(2) )
 - Ameliorate Hill muscle Model (from matlab code)
-- Design optimization framework
+- Design optimization framework 
 - Optimize muscle parameters and placement
 
 - Add feedback in the model (See force and position  feedback here: https://developer.blender.org/T35460)
 
 - Replace oscillator with neural net (Karsten)
-- Add feedback to oscillator

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 ##
 # Mouse Locomotion Simulation
 # 
@@ -11,10 +13,9 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
-from config import Config
 import subprocess
 
-BLENDER_PLAYER_PATH = "/home/gabs48/src/blender-2.76/blenderplayer"
+BLENDER_PLAYER_PATH = "/home/gabs48/src/blender-2.77/blenderplayer"
 BLENDER_MODEL = "robot.blend"
 
 def start_blender_sim(player_path_=BLENDER_PLAYER_PATH, arg_=None):
@@ -24,6 +25,7 @@ def start_blender_sim(player_path_=BLENDER_PLAYER_PATH, arg_=None):
 
 	# Add arguments to command line
 	args.extend([
+		"-w", "1080", "600", "2000", "200",
 		"-g", "show_framerate", "=", "1",
 		"-g", "show_profile", "=", "1",
 		"-g", "show_properties", "=", "1",
@@ -45,9 +47,6 @@ def start_blender_sim(player_path_=BLENDER_PLAYER_PATH, arg_=None):
 
 if __name__ == '__main__':
 
-	# Create a configuration file
-	config = Config()
-
 	# Set-up simulator options
 	exit = False
 	n_iter = 0
@@ -61,6 +60,6 @@ if __name__ == '__main__':
 		# Exit condition is triggered in main.py
 
 		# Check cost function and modify config if needed
-		if n_iter > 1:
+		if n_iter >= 0:
 			exit = True
 		n_iter += 1
