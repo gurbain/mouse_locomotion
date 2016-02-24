@@ -235,7 +235,9 @@ class DampedSpringMuscle:
 		impulse = force / bge.logic.getLogicTicRate()
 
 		# apply impusle on an object point only in traction
+		f_type = "Push"
 		if float((force * self.l.normalized())) < 0.0:
+			f_type = "Pull"
 			self.obj1.applyImpulse(self.app_point_1_world, - impulse)
 			self.obj2.applyImpulse(self.app_point_2_world, impulse)
 		
@@ -246,6 +248,7 @@ class DampedSpringMuscle:
 		if self.debug:
 			print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
 				+ str(force * self.l.normalized()) + "N")
+			print("\t\t\tType = " +  f_type)
 			print("\t\t\tFs = " +  str(force_s))
 			print("\t\t\tFd = " + str(force_d))
 			print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))

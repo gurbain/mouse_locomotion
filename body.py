@@ -46,26 +46,32 @@ class Backleg(Leg):
 		self.orien = orien_
 
 		# Create the muscles objects following config
+		self.muscles = []
+		self.brain_sig = []
 		if self.orien == "L":
-			self.biceps = Muscle(self.scene, self.config.back_legs_muscles[0])
-			self.triceps = Muscle(self.scene, self.config.back_legs_muscles[2])
-			self.gastro = Muscle(self.scene, self.config.back_legs_muscles[4])
+			for muscle_config in self.config.back_leg_L_muscles:
+				self.muscles.append(Muscle(self.scene, muscle_config))
+				self.brain_sig.append(muscle_config["brain_sig"])
 		else: # R
-			self.biceps = Muscle(self.scene, self.config.back_legs_muscles[1])
-			self.triceps = Muscle(self.scene, self.config.back_legs_muscles[3])
-			self.gastro = Muscle(self.scene, self.config.back_legs_muscles[5])
+			for muscle_config in self.config.back_leg_R_muscles:
+				print(muscle_config)
+				self.muscles.append(Muscle(self.scene, muscle_config))
+				self.brain_sig.append(muscle_config["brain_sig"])
 
 	def update(self, ctrl_sig_):
 		"Update control signals and forces"
 
-		self.biceps.update(ctrl_sig_[0])
-		self.triceps.update(ctrl_sig_[1])
-		self.gastro.update(ctrl_sig_[2])
+		for i in range(len(self.muscles)):
+			if self.brain_sig[i] == None:
+				ctrl_sig = 0
+			else:
+				ctrl_sig = ctrl_sig_[self.brain_sig[i]]
+			self.muscles[i].update(ctrl_sig)
 		
 		self.n_iter += 1
 		if self.debug:
 			print("[DEBUG] Backleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " \
-				+  str(ctrl_sig_))
+				+  str(self.brain_sig))
 
 
 class Foreleg(Leg):
@@ -78,26 +84,31 @@ class Foreleg(Leg):
 		self.orien = orien_
 
 		# Create the muscles objects following config
+		self.muscles = []
+		self.brain_sig = []
 		if self.orien == "L":
-			self.biceps = Muscle(self.scene, self.config.front_legs_muscles[0])
-			self.triceps = Muscle(self.scene, self.config.front_legs_muscles[2])
-			self.gastro = Muscle(self.scene, self.config.front_legs_muscles[4])
+			for muscle_config in self.config.front_leg_L_muscles:
+				self.muscles.append(Muscle(self.scene, muscle_config))
+				self.brain_sig.append(muscle_config["brain_sig"])
 		else: # R
-			self.biceps = Muscle(self.scene, self.config.front_legs_muscles[1])
-			self.triceps = Muscle(self.scene, self.config.front_legs_muscles[3])
-			self.gastro = Muscle(self.scene, self.config.front_legs_muscles[5])
+			for muscle_config in self.config.front_leg_R_muscles:
+				self.muscles.append(Muscle(self.scene, muscle_config))
+				self.brain_sig.append(muscle_config["brain_sig"])
 
 	def update(self, ctrl_sig_):
 		"Update control signals and forces"
 
-		self.biceps.update(ctrl_sig_[0])
-		self.triceps.update(ctrl_sig_[1])
-		self.gastro.update(ctrl_sig_[2])
+		for i in range(len(self.muscles)):
+			if self.brain_sig[i] == None:
+				ctrl_sig = 0
+			else:
+				ctrl_sig = ctrl_sig_[self.brain_sig[i]]
+			self.muscles[i].update(ctrl_sig)
 
 		self.n_iter += 1
 		if self.debug:
 			print("[DEBUG] Foreleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " \
-				+  str(ctrl_sig_))
+				+  str(self.brain_sig))
 
 
 class Body:
@@ -135,10 +146,16 @@ class Body:
 		for muscle in self.muscles:
 			muscle.update()
 
-		self.l_ba_leg.update([float(self.brain.state[2]), float(self.brain.state[0]), 0])
-		self.r_ba_leg.update([float(self.brain.state[2]), float(self.brain.state[0]), 0])
-		self.l_fo_leg.update([float(self.brain.state[0]), float(self.brain.state[1]), 0])
-		self.r_fo_leg.update([float(self.brain.state[0]), float(self.brain.state[1]), 0])
+		ctrl_sig = [float(self.brain.state[0]), float(self.brain.state[1]), float(self.brain.state[2]), \
+			float(self.brain.state[3])]
+		# 2 0 /
+		# 2 0 /
+		# 0 1 /
+		# 0 1 /
+		self.l_ba_leg.update(ctrl_sig)
+		self.r_ba_leg.update(ctrl_sig)
+		self.l_fo_leg.update(ctrl_sig)
+		self.r_fo_leg.update(ctrl_sig)
 		
 		self.n_iter += 1
 		if self.debug:
