@@ -1,28 +1,37 @@
 # Mouse Locomotion Simulation
-This repository proposes a Blender model and some simulation scripts for mouse locomotion driven by reservoir computing.
+This repository gathered blender models and python scripts for quadruped locomotion driven by reservoir computing.
 
-### Running on Ubuntu 14.04
+## Install
 Installation has been tested with Ubuntu 14.04 only but should work for other OS since Blender is a multi-platform tool.
-- Install Blender:
-```
-sudo apt-get install blender
-```
-This code has also been tested with Blender 2.76 manually compiled and Python 3. More information about manual building here: http://wiki.blender.org/index.php/Dev:Doc/Building_Blender
+
 - Import the model:
 ```
 git clone https://github.com/Gabs48/mouse_locomotion
 ```
-- Run the simulation:
+- Install Blender:
+This code uses some new features of Blender and requires Blender 2.77 at least. The Blender 2.77 binaries can be downloaded via their repository:
 ```
 cd mouse_locomotion
-blender -b cheesy.blend --python start.py
+wget http://download.blender.org/release/Blender2.77/blender-2.77-testbuild2-linux-glibc211-x86_64.tar.bz2
+tar -xf blender-2.77-testbuild2-linux-glibc211-x86_64.tar.bz2
+mv blender-2.77-testbuild2-linux-glibc211-x86_64 blender-2.77
 ```
-As the view is not set, nothing appears in the GUI that opens but the simulation runs in the background and should ouput stuff in the shell. The simulation can also be runned inside the blender software, by placing the cursor on the 3D view and pressing the keyboard key 'p'.
+**An explanation is needed here for Windows and OSX**
 
-### Editing
-- To edit the model, just open it in Blender:
+## Run
+The simulation can be launched via the **start.py** script:
 ```
-cd mouse_locomotion
-blender cheesy.blend
+./start.py [[-options]] model.blend
 ```
-- To edit the controls, open the Python scripts in your IDE. An overview of the simulation process can be found in *architecture.jpg*. The init.py and main.py scripts are started from the blender object *obj_head* (see Outliner tab). This can be modified in the Logic Editor tab.
+The full list of options can be accessed by adding the *-h* or **--help** parameters.
+
+## Edit
+
+- To edit geometry, mass and visual properties of the 3D model, open it with blender:
+```
+./blender-2.77/blender model.blend
+```
+- To edit the brain model, the muscle model and the body configuration, open the file *config.py* with your IDE:
+```
+vi config.py
+```

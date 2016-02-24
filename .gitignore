@@ -2,8 +2,11 @@
 __pycache__/
 
 # Ignore autosave from blender
-robot.blend1
-cheesy.blend1
+*.blend1
+*.blend2
 
-# Ignore savec simulations
+# Ignore saved simulations
 saved_sim/*
+
+# Ignore blender binaries
+blender-*/*
