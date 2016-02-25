@@ -10,3 +10,6 @@ saved_sim/*
 
 # Ignore blender binaries
 blender-*/*
+
+# Ignore population models created for simulation
+*_pop.blend

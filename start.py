@@ -22,6 +22,7 @@ BLENDER_PATH = "blender-2.77/"
 BLENDER_MODEL = "robot.blend"
 CONFIG_NAME = "RobotDefConfig"
 SIM_TYPE = "run"
+BPY_FUNCTION_NAME = "create_population"
 FULLSCREEN_MODE = False
 DEBUG_MODE = False
 SAVE_OPTION = False
@@ -62,6 +63,7 @@ def start_blender():
 	args.extend(["-b"])
 	args.extend([BLENDER_MODEL])
 	args.extend(["--python", "model.py"])
+	args.extend(["--", BPY_FUNCTION_NAME + "()"])
 
 	# Start batch process and quit
 	subprocess.call(args)
@@ -70,7 +72,6 @@ def start_blender():
 def run_sim():
 	"Run a simple one shot simulation"
 
-	start_blender()
 	start_blenderplayer()
 	print ("[INFO] Simulation Finished!")
 
@@ -83,6 +84,9 @@ def brain_opti_sim():
 
 	# Offilne optimization loop
 	while exit == False:
+
+		# Create a population
+		start_blender()
 
 		# Run the simulation
 		start_blenderplayer()

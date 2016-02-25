@@ -12,5 +12,34 @@
 ##
 
 import bpy
+import sys
+import os.path
 
-print("[INFO] Model modified!")
+def create_population(n_pop_=10):
+
+	# Hide ground, lamps and camera
+	bpy.data.objects["obj_ground"].hide = True
+	bpy.data.objects["Camera"].hide = True
+	bpy.data.objects["Lamp"].hide = True
+	bpy.data.objects["Lamp.001"].hide = True
+	bpy.data.objects["Lamp.002"].hide = True
+
+	# Selct all remaining objects in buffer
+	bpy.ops.object.select_all(action='SELECT')
+
+	for i in range(n_pop_ - 1):
+		# Duplicate and translate new object
+		bpy.ops.object.duplicate()
+		bpy.ops.transform.translate(value=(0, 15, 0), constraint_axis=(False, True, False), \
+			constraint_orientation='GLOBAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH',\
+			proportional_size=1, release_confirm=True)
+
+	# Save new model with a different name
+	splited_filename = os.path.splitext(bpy.data.filepath)
+	saved_filename = splited_filename[0] + "_pop" + splited_filename[1]
+	bpy.ops.wm.save_as_mainfile(filepath=saved_filename)
+	print("[INFO] Population Model of size " + str(n_pop_) + " created and savec with name: " + saved_filename)
+
+
+# Start the required script
+eval(sys.argv[len(sys.argv) - 1])

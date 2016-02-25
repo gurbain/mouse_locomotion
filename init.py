@@ -21,7 +21,7 @@ CONFIG_NAME = "RobotDefConfig()"
 DEBUG_MODE = "False"
 SAVE_OPTION = "False"
 
-print("####################################")
+print("\n\n####################################")
 print("##   Mouse Locomotion Simulation   #")
 print("##   ---------------------------   #")
 print("##                                 #")
