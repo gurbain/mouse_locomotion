@@ -18,7 +18,7 @@ import sys
 import config
 
 # Default options
-BLENDER_PLAYER_PATH = "blender-2.77/blenderplayer"
+BLENDER_PATH = "blender-2.77/"
 BLENDER_MODEL = "robot.blend"
 CONFIG_NAME = "RobotDefConfig"
 SIM_TYPE = "run"
@@ -26,11 +26,11 @@ FULLSCREEN_MODE = False
 DEBUG_MODE = False
 SAVE_OPTION = False
 
-def start_blender():
+def start_blenderplayer():
 	"Call blenderplayer binary via command line subprocess"
 
 	# Fetch blender game engine standalone path
-	args = [BLENDER_PLAYER_PATH]
+	args = [BLENDER_PATH + "blenderplayer"]
 
 	# Add arguments to command line
 	args.extend([
@@ -41,6 +41,8 @@ def start_blender():
 		"-g", "ignore_deprecation_warnings", "=", "0",
 		"-d",
 		])
+	if FULLSCREEN_MODE:
+		args.extend(["-f"])
 	args.extend([BLENDER_MODEL])
 	args.extend(["-", CONFIG_NAME + "()"])
 	args.extend([str(DEBUG_MODE), str(SAVE_OPTION)])
@@ -49,12 +51,32 @@ def start_blender():
 	# Start batch process and quit
 	subprocess.call(args)
 
-	print ("[INFO] Simulation Finished!")
-	return
+
+def start_blender():
+	"Call blender binary via command line subprocess"
+
+	# Fetch blender game engine standalone path
+	args = [BLENDER_PATH + "blender"]
+
+	# Add arguments to command line
+	args.extend(["-b"])
+	args.extend([BLENDER_MODEL])
+	args.extend(["--python", "model.py"])
+
+	# Start batch process and quit
+	subprocess.call(args)
 
 
 def run_sim():
+	"Run a simple one shot simulation"
 
+	start_blender()
+	start_blenderplayer()
+	print ("[INFO] Simulation Finished!")
+
+
+def brain_opti_sim():
+	"Run an iterative simulation to optimize the muscles parameters"
 	# Set-up simulator options
 	exit = False
 	n_iter = 0
@@ -63,7 +85,7 @@ def run_sim():
 	while exit == False:
 
 		# Run the simulation
-		start_blender()
+		start_blenderplayer()
 
 		# Exit condition is triggered in main.py
 
@@ -73,19 +95,15 @@ def run_sim():
 		n_iter += 1
 
 
-def brain_opti_sim():
-	print("[INFO] This simulation is not implemented yet! Exiting...")
-	exit(0)
-
-
 def muscle_opti_sim():
+	"Run an iterative simulation to optimize the muscles parameters"
+
 	print("[INFO] This simulation is not implemented yet! Exiting...")
-	exit(0)
 
 
 def disp_menu():
 	print("This script provide a framework for quadruped locomotion driven by reservoir computing\n")
-	print("Usage: ./start.py [-hfsd] [-t TYPE] [-b BLENDERPLAYER] [-c CONFIG] [MODEL]")
+	print("Usage: ./start.py [-hfsd] [-t TYPE] [-p BLENDER_PATH] [-c CONFIG] [MODEL]")
 	print("Examples:         ./start.py robot.blend")
 	print("                  ./start.py -d -f -t brain_optim cheesy.blend\n")
 	print("-h                Display this help menu and exit")
@@ -98,10 +116,9 @@ def disp_menu():
 			else:
 				if c.find("__") == -1:
 					print(c + "; ", end="")
-			
 	print("\n-t TYPE           Specify the type of simulation to be done. Avaiblable types are:")
 	print("                  run (default); brain_opti; muscle_opti")
-	print("-b BLENDERPLAYER  Specify the path for the blenderplayer binaries.")
+	print("-p BLENDER_PATH   Specify the path for the blender binaries.")
 	print("                  Default: ./blender-2.77/blenderplayer")
 	print("-s                Save config at the end of the simulation")
 	print("-f                Fullscreen view")
@@ -145,9 +162,9 @@ if __name__ == '__main__':
 		if arg == "-b":
 			if i + 1 < len(sys.argv):
 				if sys.argv[i + 1][0] != '-':
-					BLENDER_PLAYER_PATH = sys.argv[i + 1]
+					BLENDER_PATH = sys.argv[i + 1]
 			else:
-				print("[INFO] No valid blenderplayer binary after option '-b'. Using " + BLENDER_PLAYER_PATH \
+				print("[INFO] No valid blenderplayer binary after option '-b'. Using " + BLENDER_PATH \
 					+ " by default.")
 
 		if arg == "-c":

@@ -17,7 +17,7 @@ from config import *
 import sys
 
 # Default config when started directly from Blender
-CONFIG_NAME = "RobotVertDefConfig()"
+CONFIG_NAME = "RobotDefConfig()"
 DEBUG_MODE = "False"
 SAVE_OPTION = "False"
 
