@@ -16,14 +16,14 @@ wget http://download.blender.org/release/Blender2.77/blender-2.77-testbuild2-lin
 tar -xf blender-2.77-testbuild2-linux-glibc211-x86_64.tar.bz2
 mv blender-2.77-testbuild2-linux-glibc211-x86_64 blender-2.77
 ```
-**An explanation is needed here for Windows and OSX**
+*An explanation is needed here for Windows and OSX*
 
 ## Run
-The simulation can be launched via the **start.py** script:
+The simulation can be launched via the *start.py* script:
 ```
 ./start.py [[-options]] model.blend
 ```
-The full list of options can be accessed by adding the *-h* or **--help** parameters.
+The full list of options can be accessed by adding the *-h* or *--help* parameters.
 
 ## Edit
 
