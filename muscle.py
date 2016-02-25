@@ -164,22 +164,29 @@ class DampedSpringMuscle:
 		self.params = params_
 		self.name = self.params["name"]
 		self.debug = self.params["debug"]
+		self.active = True
 
-		# Objects
-		assert (self.scene.objects[self.params["obj_1"]] != None), \
-			"[CRITIC] Muscle " + self.name + " first extremity is not connected to any object!"
-		assert (self.scene.objects[self.params["obj_2"]] != None),\
-			"[CRITIC] Muscle " + self.name + " second extremity is not connected to any object!"
-		self.obj1 = self.scene.objects[self.params["obj_1"]]
-		self.obj2 = self.scene.objects[self.params["obj_2"]]
+		# Check if onject exist
+		if not self.params["obj_1"] in self.scene.objects:
+			print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
+				+ " Check your configuration file!")
+			self.active = False
+		else:
+			self.obj1 = self.scene.objects[self.params["obj_1"]]
+		if not self.params["obj_2"] in self.scene.objects:
+			print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
+				+ " Check your configuration file!")
+			self.active = False
+		else:
+			self.obj2 = self.scene.objects[self.params["obj_2"]]
 
 		# Points of application in local coordinates
 		if self.params["anch_1"] == None:
-			print("[DANGER] You have not defined the first application point of muscle " + self.name + \
+			print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name + \
 				"! Center is taken by default. This may results in erroneous simulation")
 			self.params["anch_1"] = [0.0, 0.0, 0.0]
 		if self.params["anch_2"] == None:
-			print("[DANGER] You have not defined the second application point of muscle " + self.name + \
+			print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name + \
 				"! Center is taken by default. This may results in erroneous simulation")
 			self.params["anch_2"] = [0.0, 0.0, 0.0]
 		self.app_point_1 = vec((self.params["anch_1"]))
@@ -189,13 +196,14 @@ class DampedSpringMuscle:
 		self.k = self.params["k"]; # scalar in N/m
 		self.c = self.params["c"]; # scalar in N/m
 		self.k_cont = self.params["kc"] # no dimension
-		self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
-		self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
-		self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
-		v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
-		self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
-		self.l0 = self.params["kl0"] * self.l.length; # scalar in m
-		self.l_cont = self.l0; # scalar in m
+		if self.active:
+			self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
+			self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
+			self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
+			v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
+			self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
+			self.l0 = self.params["kl0"] * self.l.length; # scalar in m
+			self.l_cont = self.l0; # scalar in m
 
 	def draw_muscle(self, color_=[256,0,0]):
 		bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
@@ -208,53 +216,58 @@ class DampedSpringMuscle:
 		"Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
 		fixing manually l0"
 
-		# get control length
-		if ctrl_sig == None:
-			self.l_cont = self.l0 # by default, control length is the spring reference length
+		# If muscle has not been deactivated
+		if self.active:
+
+			# get control length
+			if ctrl_sig == None:
+				self.l_cont = self.l0 # by default, control length is the spring reference length
+			else:
+				self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
+
+			# get length and velocity
+			self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
+			self.app_point_2_world = self.obj2.worldTransform * self.app_point_2
+			self.l =  self.app_point_2_world - self.app_point_1_world
+
+			# Damping must be in spring axis direction.
+			v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
+			self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized()
+			#print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
+
+			# compute spring force
+			force_s = - (self.k * (self.l.length - self.l_cont) ) * self.l.normalized()
+
+			# compute damping force
+			force_d = - self.c * self.v_norm
+
+			# compute total force
+			force = force_s + force_d
+			impulse = force / bge.logic.getLogicTicRate()
+
+			# apply impusle on an object point only in traction
+			f_type = "Push"
+			if float((force * self.l.normalized())) < 0.0:
+				f_type = "Pull"
+				self.obj1.applyImpulse(self.app_point_1_world, - impulse)
+				self.obj2.applyImpulse(self.app_point_2_world, impulse)
+			
+			# DEBUG data
+			self.draw_muscle()
+			self.n_iter += 1
+
+			if self.debug:
+				print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
+					+ str(force * self.l.normalized()) + "N")
+				print("\t\t\tType = " +  f_type)
+				print("\t\t\tFs = " +  str(force_s))
+				print("\t\t\tFd = " + str(force_d))
+				print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
+				print("\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" +  str(self.app_point_2_world))
+				print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" +  str(self.app_point_2))
 		else:
-			self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
-
-		# get length and velocity
-		self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
-		self.app_point_2_world = self.obj2.worldTransform * self.app_point_2
-		self.l =  self.app_point_2_world - self.app_point_1_world
-
-		# Damping must be in spring axis direction.
-		v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
-		self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized()
-		#print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
-
-		# compute spring force
-		force_s = - (self.k * (self.l.length - self.l_cont) ) * self.l.normalized()
-
-		# compute damping force
-		force_d = - self.c * self.v_norm
-
-		# compute total force
-		force = force_s + force_d
-		impulse = force / bge.logic.getLogicTicRate()
-
-		# apply impusle on an object point only in traction
-		f_type = "Push"
-		if float((force * self.l.normalized())) < 0.0:
-			f_type = "Pull"
-			self.obj1.applyImpulse(self.app_point_1_world, - impulse)
-			self.obj2.applyImpulse(self.app_point_2_world, impulse)
-		
-		# DEBUG data
-		self.draw_muscle()
-		self.n_iter += 1
-
-		if self.debug:
-			print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
-				+ str(force * self.l.normalized()) + "N")
-			print("\t\t\tType = " +  f_type)
-			print("\t\t\tFs = " +  str(force_s))
-			print("\t\t\tFd = " + str(force_d))
-			print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
-			print("\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" +  str(self.app_point_2_world))
-			print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" +  str(self.app_point_2))
-
+			if self.debug:
+				print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
 
 class Muscle(DampedSpringMuscle):
 

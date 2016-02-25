@@ -15,17 +15,19 @@
 
 import subprocess
 import sys
+import config
 
 # Default options
 BLENDER_PLAYER_PATH = "blender-2.77/blenderplayer"
 BLENDER_MODEL = "robot.blend"
+CONFIG_NAME = "RobotDefConfig"
 SIM_TYPE = "run"
 FULLSCREEN_MODE = False
 DEBUG_MODE = False
 SAVE_OPTION = False
 
 def start_blender():
-	""
+	"Call blenderplayer binary via command line subprocess"
 
 	# Fetch blender game engine standalone path
 	args = [BLENDER_PLAYER_PATH]
@@ -39,11 +41,10 @@ def start_blender():
 		"-g", "ignore_deprecation_warnings", "=", "0",
 		"-d",
 		])
-	# if arg_ !=None:
-	# 	args.extend([
-	# 		"-", arg_,
-	# 		])
 	args.extend([BLENDER_MODEL])
+	args.extend(["-", CONFIG_NAME + "()"])
+	args.extend([str(DEBUG_MODE), str(SAVE_OPTION)])
+	args.extend(["FROM_START.PY"])
 
 	# Start batch process and quit
 	subprocess.call(args)
@@ -84,12 +85,22 @@ def muscle_opti_sim():
 
 def disp_menu():
 	print("This script provide a framework for quadruped locomotion driven by reservoir computing\n")
-	print("Usage: ./start.py [-hfsd] [-t TYPE] [-b BLENDERPLAYER] [MODEL]")
+	print("Usage: ./start.py [-hfsd] [-t TYPE] [-b BLENDERPLAYER] [-c CONFIG] [MODEL]")
 	print("Examples:         ./start.py robot.blend")
 	print("                  ./start.py -d -f -t brain_optim cheesy.blend\n")
 	print("-h                Display this help menu and exit")
-	print("-t TYPE           Specify the type of simulation to be done. Avaiblable types are: run")
-	print("                  (default); brain_opti; muscle_opti")
+	print("-c CONFIG         Specify the configuration file to use. Avaiblable types are:")
+	print("                  ", end="")
+	for c in dir(config):
+		if c != "Config":
+			if c == "RobotDefConfig":
+				print(c + " (default); ", end="")
+			else:
+				if c.find("__") == -1:
+					print(c + "; ", end="")
+			
+	print("\n-t TYPE           Specify the type of simulation to be done. Avaiblable types are:")
+	print("                  run (default); brain_opti; muscle_opti")
 	print("-b BLENDERPLAYER  Specify the path for the blenderplayer binaries.")
 	print("                  Default: ./blender-2.77/blenderplayer")
 	print("-s                Save config at the end of the simulation")
@@ -132,10 +143,22 @@ if __name__ == '__main__':
 				print("[INFO] No type found after -t option. Using " + SIM_TYPE  + " by default.")
 
 		if arg == "-b":
-			if sys.argv[i + 1][0] != '-':
-				BLENDER_PLAYER_PATH = sys.argv[i + 1]
+			if i + 1 < len(sys.argv):
+				if sys.argv[i + 1][0] != '-':
+					BLENDER_PLAYER_PATH = sys.argv[i + 1]
 			else:
 				print("[INFO] No valid blenderplayer binary after option '-b'. Using " + BLENDER_PLAYER_PATH \
+					+ " by default.")
+
+		if arg == "-c":
+			if i + 1 < len(sys.argv):
+				if sys.argv[i + 1] in dir(config):
+					CONFIG_NAME = sys.argv[i + 1]
+				else:
+					print("[INFO] No valid config name after '-c'. Using " + CONFIG_NAME \
+						+ " by default.")
+			else:
+				print("[INFO] No valid config name after '-c'. Using " + CONFIG_NAME \
 					+ " by default.")
 		i += 1
 

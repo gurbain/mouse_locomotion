@@ -54,7 +54,6 @@ class Backleg(Leg):
 				self.brain_sig.append(muscle_config["brain_sig"])
 		else: # R
 			for muscle_config in self.config.back_leg_R_muscles:
-				print(muscle_config)
 				self.muscles.append(Muscle(self.scene, muscle_config))
 				self.brain_sig.append(muscle_config["brain_sig"])
 

@@ -14,6 +14,12 @@
 import bge
 from body import *
 from config import *
+import sys
+
+# Default config when started directly from Blender
+CONFIG_NAME = "RobotVertDefConfig()"
+DEBUG_MODE = "False"
+SAVE_OPTION = "False"
 
 print("####################################")
 print("##   Mouse Locomotion Simulation   #")
@@ -27,10 +33,18 @@ controller = bge.logic.getCurrentController()
 scene = bge.logic.getCurrentScene()
 keyboard = bge.logic.keyboard
 owner = controller.owner
- 
-# Create python model/controller
+
+# Catch command-line config when started from start.py script
+if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
+	CONFIG_NAME = sys.argv[len(sys.argv) - 4]
+	DEBUG_MODE = sys.argv[len(sys.argv) - 3]
+	SAVE_OPTION = sys.argv[len(sys.argv) - 2]
+
+# Create python controller
 owner["n_iter"] = 0
-owner["config"] = RobotVertDefConfig()
+owner["config"] = eval(CONFIG_NAME)
+owner["config"].debug = eval(DEBUG_MODE)
+owner["config"].save = eval(SAVE_OPTION)
 owner["cheesy"] = Body(scene, owner["config"])
 
 # Set simulation parameters
