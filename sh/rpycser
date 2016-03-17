@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+#
+# rpycser			This shell script takes care of starting and stopping
+#					the the XVBF and the RPYC daemon on remote server
+#
+
+# Source params
+IFACE="eth0"
+LOCAL=$(ip -4 address show $IFACE | grep 'inet' | sed 's/.*inet \([0-9\.]\+\).*/\1/')
+LOCAL_USER=$(whoami)
+LOCAL_PS_LS="${HOME}/.rpyc_ps_ls.txt"
+
+REMOTE="campus"
+REMOTE_USER="gurbain"
+REMOTE_HOME="/home/gurbain/private"
+REMOTE_SSHRC="${REMOTE_HOME}/.sshrc"
+REMOTE_BIN_FOLDER="${REMOTE_HOME}/bin"
+REMOTE_SRC_FOLDER="${REMOTE_HOME}/src"
+REMOTE_LOG_FOLDER="${REMOTE_HOME}/log"
+
+RPYC_NAME="RPYC"
+XVFB_NAME="XVFB"
+
+# Create a command to execute remotely
+access_control() {
+	echo "[RPYC SERVER] ======== Access Control ======== "
+	printf "[RPYC SERVER] Enter your password to execute all commands on ${REMOTE}: "
+	read -s REMOTE_PWD
+	printf "\n"
+	REMOTE_CMD="sshpass -p ${REMOTE_PWD} ssh ${REMOTE_USER}@${REMOTE} 'cd ${REMOTE_HOME} && . ${REMOTE_SSHRC}; "
+}
+
+# Usage info
+show_help() {
+cat << EOF
+This shell script takes care of starting and stopping the the XVBF and the RPYC 
+servers on a list of remote servers
+
+Usage: ${0##*/} [-h] start/stop/status
+Examples: 	
+
+-h		Display this help and exit
+help		Display this help and exit
+start	 	Start all Xvfb and RPYC servers
+stop		Stop all Xvfb and RPYC servers
+EOF
+}
+
+# Handle manual tart, stop, status parameters
+case "$1" in
+  start)
+	# Start processes
+
+	# Create remote command
+	access_control
+
+	# Create Log directory
+	echo "[RPYC SERVER] ======== Server Control ======== "
+	eval "${REMOTE_CMD} mkdir -p ${REMOTE_LOG_FOLDER}'"
+	printf ${REMOTE} >> ${LOCAL_PS_LS}
+
+	# Start X buffer server
+	echo "[RPYC SERVER] Start X frame buffer "
+# 	eval "${REMOTE_CMD} cd ${REMOTE_LOG_FOLDER}; screen -dmLS ${XVFB_NAME} Xvfb :99 -screen 0 640x480x24'"
+
+	# Start RPYC server
+	echo "[RPYC SERVER] Start RPYC server on port 18812 "
+	eval "${REMOTE_CMD} cd ${REMOTE_LOG_FOLDER}; screen -dmLS ${RPYC_NAME} rpyc_classic.py '"
+	echo "quoii"
+	;;
+
+  stop)
+	# Stop processes
+
+	# Create remote command
+	access_control
+	
+	# Stop X buffer server
+	echo "[RPYC SERVER] ======== Server Control ======== "
+	echo "[RPYC SERVER] Stop X frame buffer "
+	eval "${REMOTE_CMD} screen -S ${XVFB_NAME} -p 0 -X stuff $'\003' '"
+
+	# Start RPYC server
+	echo "[RPYC SERVER] Stop RPYC server"
+	eval "${REMOTE_CMD} screen -S ${RPYC_NAME} -p 0 -X stuff $'\003' '"
+	;;
+    
+  status)
+	# Help
+	show_help
+	exit 1
+	;;
+  
+  -h)
+	# Help
+	show_help
+	exit 1
+	;;
+	
+  help)
+	# Help
+	show_help
+	exit 1
+	;;
+esac
