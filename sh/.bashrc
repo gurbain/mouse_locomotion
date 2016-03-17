@@ -185,7 +185,7 @@ fi
 
 
 ### OTHER PATH VARIABLES ###
-export PATH=${PATH}:$(find $HOME/bin -type d | tr '\n' ':' | sed 's/:$//')
+export PATH=${HOME}/src/mouse_locomotion_bin:${PATH}:$(find $HOME/bin -type d | tr '\n' ':' | sed 's/:$//')
 export LD_LIBRARY_PATH=$HOME/lib:$LD_LIBRARY_PATH
 
 export PYTHONPATH=$HOME/lib/python:$PYTHONPATH
