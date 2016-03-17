@@ -38,7 +38,7 @@ eval "${REMOTE_CMD} mkdir -p ${REMOTE_SRC_FOLDER}'"
 eval "${REMOTE_CMD} cd ${REMOTE_SRC_FOLDER} && git clone ${RPYC_SRC}'"
 eval "${REMOTE_CMD} cd ${REMOTE_SRC_FOLDER} && git clone ${PLUMBUM_SRC}'"
 eval "${REMOTE_CMD} cd ${REMOTE_SRC_FOLDER} && git clone ${MODEL_SRC}'"
-eval "${REMOTE_CMD} cp ${REMOTE_SRC_FOLDER}/${RPYC_NAME}/bin/* ${REMOTE_BIN_FOLDER}
+eval "${REMOTE_CMD} cp ${REMOTE_SRC_FOLDER}/${RPYC_NAME}/bin/* ${REMOTE_BIN_FOLDER}'"
 
 
 # Install packages

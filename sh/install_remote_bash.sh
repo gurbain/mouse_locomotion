@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 # Params
-LOCAL="157.193.206.245"
-LOCAL_USER="gabs48"
-LOCAL_BASH_FILE="${HOME}/src/mouse_locomotion/.bashrc"
+IFACE="eth0"
+LOCAL=$(ip -4 address show $IFACE | grep 'inet' | sed 's/.*inet \([0-9\.]\+\).*/\1/')
+LOCAL_USER=$(whoami)
+LOCAL_BASH_FILE="${HOME}/mouse_locomotion/sh/.bashrc"
 
 REMOTE="campus"
 REMOTE_USER="gurbain"
