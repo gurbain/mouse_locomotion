@@ -10,6 +10,7 @@ mdl/*.blend2
 mdl/other/*
 
 # Ignore population models created for simulation
+mdl/*_pop.blend
 mdl/other/*_pop.blend
 
 # Ignore saved simulations
