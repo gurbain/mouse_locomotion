@@ -53,12 +53,17 @@ class Simulation():
 
 	def __get_ip_address(self, ifname):
 		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		return socket.inet_ntoa(fcntl.ioctl(
-			s.fileno(),
-			0x8915,  # SIOCGIFADDR
- 			struct.pack('256s', ifname[:15])
-		)[20:24])
-
+		try:
+			ip_name = socket.inet_ntoa(fcntl.ioctl(
+				s.fileno(),
+				0x8915,  # SIOCGIFADDR
+	 			struct.pack('256s', ifname[:15])
+			)[20:24])
+		except Exception as e:
+			logging.warning("No ethernet connection!")
+			ip_name = "localhost"
+		
+		return ip_name
 
 	def start_service(self):
 		"Start a service server"
