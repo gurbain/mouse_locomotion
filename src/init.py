@@ -15,11 +15,16 @@ import bge
 from body import *
 from config import *
 import sys
+import time
 
 # Default config when started directly from Blender
 CONFIG_NAME = "MouseDefConfig()"
 DEBUG_MODE = "False"
-SAVE_OPTION = "False"
+dirname = "../save"
+filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
+if not os.path.exists(dirname):
+	os.makedirs(dirname)
+SAVE_NAME = dirname + "/" + filename
 
 print("\n\n####################################")
 print("##   Mouse Locomotion Simulation   #")
@@ -42,6 +47,7 @@ if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
 
 # Create python controller
 owner["n_iter"] = 0
+owner["t_init"] = time.time()
 owner["config"] = eval(CONFIG_NAME)
 owner["config"].debug = eval(DEBUG_MODE)
 owner["config"].save = eval(SAVE_OPTION)

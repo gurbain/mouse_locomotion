@@ -11,6 +11,8 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import datetime
+
 class Config:
 	"Describe the configuration file to pass as an argument to a given simulation"
 
@@ -21,8 +23,9 @@ class Config:
 		self.name = ""
 		self.sim_speed = 1.0
 		self.debug = False
-		self.save = False
 		self.exit_condition = "owner['n_iter'] > 500"
+		self.timeout = 10
+		self.save_path = "default"
 		
 		# Physical parameters
 		self.back_leg_L_muscles = []

@@ -282,8 +282,14 @@ class SimManager(Thread):
 						str(self.cloud_state[server_hash]["port"]))
 
 					# Connect to candidate server
-					conn = rpyc.connect(self.cloud_state[server_hash]["address"], \
+					try:
+						conn = rpyc.connect(self.cloud_state[server_hash]["address"], \
 						self.cloud_state[server_hash]["port"])
+
+					except Exception as e:
+						logging.error("Exception when connecting:" + str(e))
+						pass
+					
 
 					# Update the cloud_state list
 					self.mutex_cloud_state.acquire()
@@ -291,19 +297,30 @@ class SimManager(Thread):
 					self.mutex_cloud_state.release()
 
 					 # Create serving thread to handle answer
+					try:
+						bgt = rpyc.BgServingThread(conn)
+					except Exception as e:
+						logging.error("Exception in serving thread:" + str(e))
+						pass
+
 					self.mutex_conn_list.acquire()
 					self.conn_list.append({"server": server_hash, "conn": conn, \
-						"thread": rpyc.BgServingThread(conn)})
+							"thread": bgt})
 					self.mutex_conn_list.release()
 
 					 # Create asynchronous handle
 					async_simulation = rpyc.async(conn.root.exposed_simulation)
 
-					# Call asynchronous service
-					res = async_simulation(self.rqt[-1])
+					try:
+						# Call asynchronous service
+						res = async_simulation(self.rqt[-1])
 
-					# Assign asynchronous callback
-					res.add_callback(self.response_sim)
+						# Assign asynchronous callback
+						res.add_callback(self.response_sim)
+
+					except Exception as e:
+						logging.error("Exception from server:" + str(e))
+						pass
 
 					# Clear request from list: TODO: check if async_simulation don't need it anymore!
 					self.mutex_rqt.acquire()
@@ -359,11 +376,14 @@ class SimService(rpyc.Service):
 		pass
 
 	def exposed_simulation(self, opt_): # this is an exposed method
-		logging.info("Simulation request processed")
+
+		# Perform simulation
+		logging.info("Processing simulation request")
 		s = sim.BlenderSim(opt_)
 		s.start_blenderplayer()
-		time.sleep(1)
-		return self.a
+		logging.info("Simulation request processed")
+
+		return s.get_results()
 
 
 ### Testing functions ###
@@ -376,6 +396,7 @@ def start_manager():
 	t_i = time.time()
 	print("#### Starting Sim Manager Test Program with PID " + str(os.getpid()) + " ####")
 	sm = SimManager()
+	sm.daemon = True
 	sm.start()
 
 	# Send simulation list and wait for results
@@ -400,10 +421,17 @@ def start_manager():
 
 def start_service():
 	t = ThreadedServer(SimService, port=18861, auto_register=True)
-	t.start()
+	try:
+		t.start()
+	except KeyboardInterrupt:
+		t.stop()
+		print "Ctrl-c pressed ..."
+		sys.exit(1)
+
 
 def start_registry():
 	r = SimRegistry()
+	r.daemon = True
 	r.start()
 
 if __name__ == '__main__':

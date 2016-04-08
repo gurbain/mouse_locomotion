@@ -24,6 +24,7 @@ import config
 import logging
 import fcntl
 import struct
+import datetime
 
 
 
@@ -166,6 +167,11 @@ class BlenderSim():
 		"Initialize with  options"
 
 		self.opt = opt_
+		dirname =  self.opt["root_dir"] + "/save/"
+		filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
+		if not os.path.exists(dirname):
+			os.makedirs(dirname)
+		self.opt["save_path"] = dirname + "/" + filename
 
 	def start_blenderplayer(self):
 		"Call blenderplayer via command line subprocess"
@@ -186,7 +192,7 @@ class BlenderSim():
 			args.extend(["-f"])
 		args.extend([self.opt["blender_model"]])
 		args.extend(["-", self.opt["config_name"] + "()"])
-		args.extend([str(self.opt["verbose"]), str(self.opt["save"])])
+		args.extend([str(self.opt["verbose"]), str(self.opt["save_path"])])
 		args.extend(["FROM_START.PY"])
 
 		# Start batch process and quit
@@ -210,7 +216,6 @@ class BlenderSim():
 		subprocess.call(args)
 
 
-
 	def create_pop(self):
 		"Call blender via command line subprocess and create a population out of a model"
 
@@ -226,3 +231,13 @@ class BlenderSim():
 		# Start batch process and quit
 		print(args)
 		subprocess.call(args)
+
+	def get_results(self):
+		"This function reads the file saved in Blender at the end of the simulation to retrieve results"
+
+		# Retrieve filename
+		f = open(self.opt["save_path"], 'rb')
+		results = pickle.load(f)
+		f.close()
+
+		return results

@@ -31,7 +31,7 @@ class SimCli(cli.Application):
 	"This script provide a framework for quadruped locomotion driven by reservoir computing"
 	
 	# Default CLI application options
-	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model":"robot.blend", \
+	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model":"robot.blend", "root_dir":root,\
 		"config_name":"MouseDefConfig", "sim_type":"run", "registry":False, "service":False, \
 		"logfile":"stdout", "fullscreen":False, "verbose": "INFO", "save":False}
 	opt = dict()
@@ -53,8 +53,8 @@ class SimCli(cli.Application):
 		help="Start services server; no simulation will be run")
 
 	# Display modes
-	save = cli.Flag(["--save"], default=DEF_OPT["save"], \
-		help="Save simulation results and configs in root/save folder")
+	root = cli.Flag(["--root"], default=DEF_OPT["root_dir"], \
+		help="Force the root directory of the mouse locomotion software")
 	verbose = cli.SwitchAttr(["-v", "--verbosemode"], str, default=DEF_OPT["verbose"], 
 		help="Set verbose mode to ERROR, WARNING, INFO or DEBUG")
 	logfile = cli.SwitchAttr(["--logfile"], str, default=DEF_OPT["logfile"], \
@@ -65,13 +65,14 @@ class SimCli(cli.Application):
 
 	def main(self):
 		
-		self.opt["blender_path"] = root + "/bin/" + self.path 
-		self.opt["blender_model"] = root + "/mdl/" + self.model
+		self.opt["blender_path"] = self.root + "/bin/" + self.path 
+		self.opt["blender_model"] = self.root + "/mdl/" + self.model
+		self.opt["root_dir"] = self.root
+		self.opt["save_path"] = self.root + "/save/default.qsm"
 		self.opt["config_name"] = self.config
 		self.opt["sim_type"] = self.sim_type
 		self.opt["registry"] = self.registry
 		self.opt["service"] = self.service
-		self.opt["save"] = self.save
 		self.opt["verbose"] = self.verbose
 		self.opt["logfile"] = self.logfile
 		self.opt["fullscreen"] = self.fullscreen

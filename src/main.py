@@ -14,6 +14,7 @@
 import bge
 import datetime
 import os
+import time
 import pickle
 
 # Get BGE handles
@@ -23,13 +24,10 @@ exit_actuator = bge.logic.getCurrentController().actuators['quit_game']
 keyboard = bge.logic.keyboard
 
 def save():
-	dirname = "saved_sim"
-	filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".config"
-
-	if not os.path.exists(dirname):
-		os.makedirs(dirname)
-	f = open(dirname + "/" + filename, 'wb')
-	pickle.dump(owner["config"], f)
+	"Save te simulation results"
+	
+	f = open([owner["config"].save_path, 'wb')
+	pickle.dump([owner["config"] time.time()], f)
 	f.close()
 
 
@@ -44,11 +42,13 @@ if owner["config"].debug:
 
 
 # Simulation interruption
-if eval(owner["config"].exit_condition) or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
+
+if eval(owner["config"].exit_condition) \
+	or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
+	or time.time() - owner["t_init"] > owner["config"].timeout
 
 	# save config
-	if owner["config"].save:
-		save()
+	save()
 
 	# exit
 	controller.activate(exit_actuator)
