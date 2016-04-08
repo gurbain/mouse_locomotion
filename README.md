@@ -1,5 +1,5 @@
 # Mouse Locomotion Simulation
-This repository gathered blender models and python scripts for quadruped locomotion driven by reservoir computing.
+This repository gathered blender models and python scripts for quadruped locomotion driven by neural networks controlling muscle models anchored to the model. Joint torque-based control is not supported yet..
 
 ## Download:
 Installation has been tested with Ubuntu 14.04 only but should work for other OS since Blender is a multi-platform tool.
@@ -43,6 +43,8 @@ qSim -m model.blend -c MyConfig
 ```
 
 ## Cloud Simulation on Elis network
+
+This section has been written to work on a specific intranet network. Refactoring is needed (especially for bash scripts) in order to work on different network.
 
 ### Bashrc Installation
 
