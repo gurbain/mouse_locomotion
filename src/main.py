@@ -45,7 +45,7 @@ if owner["config"].debug:
 
 if eval(owner["config"].exit_condition) \
 	or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]\
-	or time.time() - owner["t_init"] > owner["config"].timeout
+	or time.time() - owner["t_init"] > owner["config"].timeout:
 
 	# save config
 	save()

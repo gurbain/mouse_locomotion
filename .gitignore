@@ -20,4 +20,5 @@ save/*
 bin/blender*
 bin/Blender*
 
-
+# Ignore IDE folders
+.idea
