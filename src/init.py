@@ -11,9 +11,17 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+# Add src folder to path
+import os.path
+import sys
+root = os.path.dirname(os.path.realpath(__file__))
+src =  root + "/src"
+sys.path.append(src)
+
 import bge
 from body import *
 from config import *
+
 import sys
 import time
 
@@ -48,9 +56,10 @@ if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
 # Create python controller
 owner["n_iter"] = 0
 owner["t_init"] = time.time()
+print(owner["t_init"])
 owner["config"] = eval(CONFIG_NAME)
 owner["config"].debug = eval(DEBUG_MODE)
-owner["config"].save = eval(SAVE_OPTION)
+owner["config"].save_path = SAVE_NAME
 owner["cheesy"] = Body(scene, owner["config"])
 
 # Set simulation parameters

@@ -194,7 +194,7 @@ class DampedSpringMuscle:
 
 		# Model constants and variables
 		self.k = self.params["k"]; # scalar in N/m
-		self.c = self.params["c"]; # scalar in N/m
+		self.c = self.params["c"]; # scalar in N.s/m
 		self.k_cont = self.params["kc"] # no dimension
 		if self.active:
 			self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
@@ -269,7 +269,156 @@ class DampedSpringMuscle:
 			if self.debug:
 				print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
 
-class Muscle(DampedSpringMuscle):
+
+class DampedSpringReducedTorqueMuscle:
+	"This class implements a simple muscle composed by a spring and a damper in parallel.\
+	Forces and torques applied in the center of gravity are computed separately and a reduction\
+	factor is added to torque to stabilise the process"
+
+	def __init__(self, scene_, params_):
+		"Class initialization. Requires scene, controller as well as two object and the local point of application \
+		of the spring forces"
+
+		self.n_iter = 0
+		self.scene = scene_
+		self.params = params_
+		self.name = self.params["name"]
+		self.debug = self.params["debug"]
+		self.active = True
+
+		# Check if onject exist
+		if not self.params["obj_1"] in self.scene.objects:
+			print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
+				+ " Check your configuration file!")
+			self.active = False
+		else:
+			self.obj1 = self.scene.objects[self.params["obj_1"]]
+		if not self.params["obj_2"] in self.scene.objects:
+			print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
+				+ " Check your configuration file!")
+			self.active = False
+		else:
+			self.obj2 = self.scene.objects[self.params["obj_2"]]
+
+		# Points of application in local coordinates
+		if self.params["anch_1"] == None:
+			print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name + \
+				"! Center is taken by default. This may results in erroneous simulation")
+			self.params["anch_1"] = [0.0, 0.0, 0.0]
+		if self.params["anch_2"] == None:
+			print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name + \
+				"! Center is taken by default. This may results in erroneous simulation")
+			self.params["anch_2"] = [0.0, 0.0, 0.0]
+		self.app_point_1 = vec((self.params["anch_1"]))
+		self.app_point_2 = vec((self.params["anch_2"]))
+
+		# Model constants and variables
+		if "k" in self.params:
+			self.k = self.params["k"]; # scalar in N/m
+		else:
+			self.k_cont = 100
+		if "c" in self.params:
+			self.c = self.params["c"]; # scalar in N.s/m
+		else:
+			self.k_cont = 10
+		if "kc" in self.params:
+			self.k_cont = self.params["kc"] # no dimension
+		else:
+			self.k_cont = 0
+		if "kt" in self.params:
+			self.damp_torque_fact = self.params["kt"] # no dimension
+		else:
+			self.damp_torque_fact = 0.1
+			
+		if self.active:
+			self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
+			self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
+			self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
+			v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
+			self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
+			self.l0 = self.params["kl0"] * self.l.length; # scalar in m
+			self.l_cont = self.l0; # scalar in m
+
+	def draw_muscle(self, color_=[256,0,0]):
+		bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
+
+	def compute_step_energy(self):
+
+		return 0
+
+	def update(self, ctrl_sig=None):
+		"Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
+		fixing manually l0"
+
+		# If muscle has not been deactivated
+		if self.active:
+
+			# get control length
+			if ctrl_sig == None:
+				self.l_cont = self.l0 # by default, control length is the spring reference length
+			else:
+				self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
+
+			# get length and velocity
+			self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
+			self.app_point_2_world = self.obj2.worldTransform * self.app_point_2
+			self.l =  self.app_point_2_world - self.app_point_1_world
+
+			# Center of gravity and lever arm
+			cg_1 = self.obj1.worldPosition
+			cg_2 = self.obj2.worldPosition
+			lever_1_vect = self.app_point_1_world - cg_1
+			lever_2_vect = self.app_point_2_world - cg_2
+
+			# Damping must be in spring axis direction.
+			v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
+			self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized()
+			#print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
+
+			# compute spring force
+			force_s = - (self.k * (self.l.length - self.l_cont) ) * self.l.normalized()
+
+			# compute damping force
+			force_d = - self.c * self.v_norm
+
+			# compute total force
+			force = force_s + force_d
+
+			# compute total torques
+			torque_1 = self.damp_torque_fact * lever_1_vect.cross(-force)
+			torque_2 = self.damp_torque_fact * lever_2_vect.cross(force)
+
+			# apply impusle on an object point only in traction
+			f_type = "Push"
+			if float((force * self.l.normalized())) < 0.0:
+				f_type = "Pull"
+				self.obj1.applyForce(- force)
+				self.obj2.applyForce(force)
+				self.obj1.applyTorque(torque_1)
+				self.obj2.applyTorque(torque_2)
+			
+			# DEBUG data
+			self.draw_muscle()
+			self.n_iter += 1
+
+			if self.debug:
+				print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
+					+ str(force * self.l.normalized()) + "N")
+				print("\t\t\tType = " +  f_type)
+				print("\t\t\tFs = " +  str(force_s))
+				print("\t\t\tFd = " + str(force_d))
+				print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
+				print("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " +  str(self.app_point_2))
+				print("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " +  str(self.app_point_2_world))
+				print("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
+				print("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
+				print("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
+		else:
+			if self.debug:
+				print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
+
+
+class Muscle(DampedSpringReducedTorqueMuscle):
 
 	def __init__(self, scene_, params_):
 		"Class initialization"

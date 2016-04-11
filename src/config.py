@@ -43,10 +43,10 @@ class RobotDefConfig(Config):
 		"Init Robot Default Config parameters"
 
 		# Simulation parameters
+		super().__init__()
 		self.name = "default_robot_simulation_config"
 		self.sim_speed = 1.0
 		self.debug = True
-		self.save = True
 		self.exit_condition = "bge.logic.getCurrentScene().objects['obj_body'].worldPosition.z < -1.8"
 
 		## Back legs
@@ -141,7 +141,6 @@ class RobotVertDefConfig(Config):
 		self.name = "default_robot_vert_simulation_config"
 		self.sim_speed = 1.0
 		self.debug = True
-		self.save = True
 		self.exit_condition =  "owner['n_iter'] > 2500"#"bge.logic.getCurrentScene().objects['obj_body.B'].worldPosition.z < -1.8"
 
 		## Back legs
@@ -278,31 +277,31 @@ class MouseDefConfig(Config):
 		"Init Mouse Default Config parameters"
 
 		# Simulation parameters
+		super().__init__()
 		self.name = "default_cheesy_simulation_config"
 		self.sim_speed = 1.0
 		self.debug = True
-		self.save = True
 		self.exit_condition = "bge.logic.getCurrentScene().objects['obj_spine'].worldPosition.z < -1.8"
 
 		## Back legs muscles
 		BL_biceps = {"name" : "B_biceps.L", "debug" : False, "obj_1" : "obj_hips", "obj_2" : "obj_shin.L",\
-			"anch_1" : [0.14, -0.01, 0.06], "anch_2" : [0.017, -0.13, 0.1], "k" : 200, \
+			"anch_1" : [0.14, -0.01, 0.06], "anch_2" : [0.017, -0.13, 0.1], "k" : 0, \
 			"c" : 0, "kc" : 0, "kl0" : 1, "brain_sig" : None}
 		BR_biceps = {"name" : "B_biceps.R", "debug" : False, "obj_1" : "obj_hips", "obj_2" : "obj_shin.R",\
-			"anch_1" : [-0.14, -0.01, 0.06], "anch_2" : [-0.017, -0.13, 0.1], "k" : 200, \
-			"c" : 10, "kc" : 0, "kl0" : 1, "brain_sig" : None}
+			"anch_1" : [-0.14, -0.01, 0.06], "anch_2" : [-0.017, -0.13, 0.1], "k" : 0, \
+			"c" : 0, "kc" : 0, "kl0" : 1, "brain_sig" : None}
 		BL_rectus = {"name" : "B_rectus.L", "debug" : False, "obj_1" : "obj_hips", "obj_2" : "obj_shin.L",\
-			"anch_1" : [0.15, -0.11, 0.17], "anch_2" : [0.017, -0.22, 0.16], "k" : 400, \
-			"c" : 2, "kc" : 0, "kl0" : 0.8, "brain_sig" : None}
+			"anch_1" : [0.15, -0.11, 0.17], "anch_2" : [0.017, -0.22, 0.16], "k" : 100, \
+			"c" : 10, "kc" : 0, "kl0" : 0.6, "brain_sig" : None}
 		BR_rectus = {"name" : "B_rectus.R", "debug" : False, "obj_1" : "obj_hips", "obj_2" : "obj_shin.R",\
-			"anch_1" : [-0.15, -0.11, 0.17], "anch_2" : [-0.017, -0.22, 0.16], "k" : 400, \
-			"c" : 2, "kc" : 0, "kl0" : 0.8, "brain_sig" : None}
+			"anch_1" : [-0.15, -0.11, 0.17], "anch_2" : [-0.017, -0.22, 0.16], "k" : 100, \
+			"c" : 10, "kc" : 0, "kl0" : 0.6, "brain_sig" : None}
 		BL_gastrocenius = {"name" : "B_gastro.L", "debug" : False, "obj_1" : "obj_thigh.L", "obj_2" : "obj_shin_lower.L",\
 			"anch_1" : [-0.01, -0.05, -0.03], "anch_2" : [0, 0.18, 0.015], "k" : 0, \
-			"c" : 0, "kc" : 0, "kl0" : 1, "brain_sig" : None}
+			"c" : 1, "kc" : 0, "kl0" : 0.2, "brain_sig" : None}
 		BR_gastrocenius = {"name" : "B_gastro.R", "debug" : False, "obj_1" : "obj_thigh.R", "obj_2" : "obj_shin_lower.R",\
 			"anch_1" : [0.01, -0.05, -0.03], "anch_2" : [0, 0.18, 0.015], "k" : 0, \
-			"c" : 0, "kc" : 0, "kl0" : 1, "brain_sig" : None}
+			"c" : 1, "kc" : 0, "kl0" : 0.2, "brain_sig" : None}
 		BL_tensor = {"name" : "B_tensor.L", "debug" : False, "obj_1" : "obj_thigh.L", "obj_2" : "obj_shin_lower.L",\
 			"anch_1" : [-0.01, -0.16, -0.07], "anch_2" : [0, 0.09, 0.015], "k" : 0, \
 			"c" : 0, "kc" : 0, "kl0" : 1, "brain_sig" : None}
