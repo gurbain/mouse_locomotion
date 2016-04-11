@@ -12,18 +12,16 @@
 ##
 
 # Add src folder to path
-import os.path
+import os
 import sys
 root = os.path.dirname(os.path.realpath(__file__))
 src =  root + "/src"
 sys.path.append(src)
 
+import time
+
 import bge
 from body import *
-from config import *
-
-import sys
-import time
 
 # Default config when started directly from Blender
 CONFIG_NAME = "MouseDefConfig()"
@@ -31,7 +29,7 @@ DEBUG_MODE = "False"
 dirname = "../save"
 filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
 if not os.path.exists(dirname):
-	os.makedirs(dirname)
+    os.makedirs(dirname)
 SAVE_NAME = dirname + "/" + filename
 
 print("\n\n####################################")
@@ -49,14 +47,13 @@ owner = controller.owner
 
 # Catch command-line config when started from start.py script
 if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
-	CONFIG_NAME = sys.argv[len(sys.argv) - 4]
-	DEBUG_MODE = sys.argv[len(sys.argv) - 3]
-	SAVE_OPTION = sys.argv[len(sys.argv) - 2]
+    CONFIG_NAME = sys.argv[len(sys.argv) - 4]
+    DEBUG_MODE = sys.argv[len(sys.argv) - 3]
+    SAVE_OPTION = sys.argv[len(sys.argv) - 2]
 
 # Create python controller
 owner["n_iter"] = 0
 owner["t_init"] = time.time()
-print(owner["t_init"])
 owner["config"] = eval(CONFIG_NAME)
 owner["config"].debug = eval(DEBUG_MODE)
 owner["config"].save_path = SAVE_NAME

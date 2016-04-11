@@ -13,95 +13,94 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
-import subprocess
 import logging
 import sys
+
 from plumbum import cli
 
+from src.sim import Simulation
 # Add src folder to path
 from os.path import dirname, realpath
+
 root = dirname(dirname(realpath(__file__)))
-src =  root + "/src"
+src = root + "/src"
 sys.path.append(src)
 
-import sim
-import net
 
 class SimCli(cli.Application):
-	"This script provide a framework for quadruped locomotion driven by reservoir computing"
-	
-	# Default CLI application options
-	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model":"robot.blend", "root_dir":root,\
-		"config_name":"MouseDefConfig", "sim_type":"run", "registry":False, "service":False, \
-		"logfile":"stdout", "fullscreen":False, "verbose": "INFO", "save":False}
-	opt = dict()
+    """This script provide a framework for quadruped locomotion driven by reservoir computing"""
 
-	# Simulation parameters
-	path = cli.SwitchAttr(["-p", "--binpath"], str, default=DEF_OPT["blender_path"], \
-		help="Path of Blender binaries")
-	model = cli.SwitchAttr(["-m", "--model"], str, default=DEF_OPT["blender_model"], \
-		help="Model to simulation")
-	config = cli.SwitchAttr(["-c", "--config"], str, default=DEF_OPT["config_name"], 
-		help="The config class to be used for simulation")
-	sim_type = cli.SwitchAttr(["-t", "--type"], str, default=DEF_OPT["sim_type"], \
-		help="Specify the type of simulation: RUN, BRAIN or MUSCLE")
+    # Default CLI application options
+    DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend", "root_dir": root,
+               "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
+               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
+    opt = dict()
 
-	# Server modes
-	registry = cli.Flag(["-r"], default=DEF_OPT["registry"], \
-		help="Start registry server; no simulation will be run")
-	service = cli.Flag(["-s"], default=DEF_OPT["service"], \
-		help="Start services server; no simulation will be run")
+    # Simulation parameters
+    path = cli.SwitchAttr(["-p", "--binpath"], str, default=DEF_OPT["blender_path"],
+                          help="Path of Blender binaries")
+    model = cli.SwitchAttr(["-m", "--model"], str, default=DEF_OPT["blender_model"],
+                           help="Model to simulation")
+    config = cli.SwitchAttr(["-c", "--config"], str, default=DEF_OPT["config_name"],
+                            help="The config class to be used for simulation")
+    sim_type = cli.SwitchAttr(["-t", "--type"], str, default=DEF_OPT["sim_type"],
+                              help="Specify the type of simulation: RUN, BRAIN or MUSCLE")
 
-	# Display modes
-	root = cli.Flag(["--root"], default=DEF_OPT["root_dir"], \
-		help="Force the root directory of the mouse locomotion software")
-	verbose = cli.SwitchAttr(["-v", "--verbosemode"], str, default=DEF_OPT["verbose"], 
-		help="Set verbose mode to ERROR, WARNING, INFO or DEBUG")
-	logfile = cli.SwitchAttr(["--logfile"], str, default=DEF_OPT["logfile"], \
-		help="The log file to use")
-	fullscreen = cli.Flag(["-f", "--fullscreen"], default=DEF_OPT["fullscreen"], \
-		help="Enable fullscreen mode")
-	
+    # Server modes
+    registry = cli.Flag(["-r"], default=DEF_OPT["registry"],
+                        help="Start registry server; no simulation will be run")
+    service = cli.Flag(["-s"], default=DEF_OPT["service"],
+                       help="Start services server; no simulation will be run")
 
-	def main(self):
-		
-		self.opt["blender_path"] = self.root + "/bin/" + self.path 
-		self.opt["blender_model"] = self.root + "/mdl/" + self.model
-		self.opt["root_dir"] = self.root
-		self.opt["save_path"] = self.root + "/save/default.qsm"
-		self.opt["config_name"] = self.config
-		self.opt["sim_type"] = self.sim_type
-		self.opt["registry"] = self.registry
-		self.opt["service"] = self.service
-		self.opt["verbose"] = self.verbose
-		self.opt["logfile"] = self.logfile
-		self.opt["fullscreen"] = self.fullscreen
+    # Display modes
+    root = cli.Flag(["--root"], default=DEF_OPT["root_dir"],
+                    help="Force the root directory of the mouse locomotion software")
+    verbose = cli.SwitchAttr(["-v", "--verbosemode"], str, default=DEF_OPT["verbose"],
+                             help="Set verbose mode to ERROR, WARNING, INFO or DEBUG")
+    logfile = cli.SwitchAttr(["--logfile"], str, default=DEF_OPT["logfile"],
+                             help="The log file to use")
+    fullscreen = cli.Flag(["-f", "--fullscreen"], default=DEF_OPT["fullscreen"],
+                          help="Enable fullscreen mode")
 
-		# TODO Configure logging
-		logging.basicConfig(stream=sys.stdout, level=logging.INFO,\
-			format="[%(levelname)s - %(asctime)s - %(filename)s:%(lineno)d] %(message)s")
-		logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,\
-			format="[%(levelname)s - %(asctime)s - %(threadName)s:%(funcName)s - %(filename)s:%(lineno)d] %(message)s")
-		logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="[%(levelname)s - \
-			%(filename)s:%(lineno)d] %(message)s")
-		logging.basicConfig(stream=sys.stdout, level=logging.ERROR, format="[%(levelname)s - \
-			%(filename)s:%(lineno)d] %(message)s")
+    def main(self):
 
-		# Start servers if called
-		s = sim.Simulation(self.opt)
-		if self.opt["registry"]:
-			s.start_registry()
-		elif self.opt["service"]: 
-			s.start_service()
+        self.opt["blender_path"] = self.root + "/bin/" + self.path
+        self.opt["blender_model"] = self.root + "/mdl/" + self.model
+        self.opt["root_dir"] = self.root
+        self.opt["save_path"] = self.root + "/save/default.qsm"
+        self.opt["config_name"] = self.config
+        self.opt["sim_type"] = self.sim_type
+        self.opt["registry"] = self.registry
+        self.opt["service"] = self.service
+        self.opt["verbose"] = self.verbose
+        self.opt["logfile"] = self.logfile
+        self.opt["fullscreen"] = self.fullscreen
 
-		# Else, start chosen simulation
-		else:
-			if self.opt["sim_type"] == "brain_opti":
-				s.brain_opti_sim()
-			elif self.opt["sim_type"] == "muscle_opti":
-				s.brain_opti_sim()
-			else:
-				s.run_sim()
+        # TODO Configure logging
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                            format="[%(levelname)s - %(asctime)s - %(filename)s:%(lineno)d] %(message)s")
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+                            format="[%(levelname)s - %(asctime)s - %(threadName)s:%(funcName)s - %(filename)s:%(lineno)d] %(message)s")
+        logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="[%(levelname)s - \
+            %(filename)s:%(lineno)d] %(message)s")
+        logging.basicConfig(stream=sys.stdout, level=logging.ERROR, format="[%(levelname)s - \
+            %(filename)s:%(lineno)d] %(message)s")
+
+        # Start servers if called
+        s = Simulation(self.opt)
+        if self.opt["registry"]:
+            s.start_registry()
+        elif self.opt["service"]:
+            s.start_service()
+
+        # Else, start chosen simulation
+        else:
+            if self.opt["sim_type"] == "brain_opti":
+                s.brain_opti_sim()
+            elif self.opt["sim_type"] == "muscle_opti":
+                s.brain_opti_sim()
+            else:
+                s.run_sim()
 
 
 if __name__ == "__main__":

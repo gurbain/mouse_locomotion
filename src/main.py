@@ -11,11 +11,10 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
-import bge
-import datetime
-import os
-import time
 import pickle
+import time
+
+import bge
 
 # Get BGE handles
 controller = bge.logic.getCurrentController()
@@ -23,33 +22,33 @@ owner = controller.owner
 exit_actuator = bge.logic.getCurrentController().actuators['quit_game']
 keyboard = bge.logic.keyboard
 
+
 def save():
-	"Save te simulation results"
-	
-	f = open(owner["config"].save_path, 'wb')
-	pickle.dump([owner["config"], time.time()], f)
-	f.close()
+    """Save te simulation results"""
+
+    f = open(owner["config"].save_path, 'wb')
+    pickle.dump([owner["config"], time.time()], f)
+    f.close()
 
 
 # Time-step update instructions
 owner["cheesy"].update()
 
-
 # DEBUG control and display
 owner["n_iter"] += 1
 if owner["config"].debug:
-	print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " + str(eval(owner["config"].exit_condition)))
-	print("[DEBUG] Interruption: exit = " + str(eval(owner["config"].exit_condition)) + " space key = " + \
-	str(bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]) + " sim time = " + \
-	str(time.time() - owner["t_init"]) + " timeout = " + str(owner["config"].timeout))
+    print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " + \
+        str(eval(owner["config"].exit_condition))
+    print("[DEBUG] Interruption: exit = " + str(eval(owner["config"].exit_condition)) + \
+        " sim time = " + str(time.time() - owner["t_init"]) + " timeout = " + str(owner["config"].timeout))
+	
 
 # Simulation interruption
 if eval(owner["config"].exit_condition) \
-	or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
-	#or time.time() - owner["t_init"] > owner["config"].timeout:
+    or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
+    or time.time() - owner["t_init"] > owner["config"].timeout:
+    # save config
+    save()
 
-	# save config
-	save()
-
-	# exit
-	controller.activate(exit_actuator)
+    # exit
+    controller.activate(exit_actuator)
