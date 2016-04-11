@@ -14,22 +14,20 @@
 ##
 
 
-import subprocess
-import time
-import sys
+import datetime
+import fcntl
+import logging
 import os
 import socket
-import net
-import config
-import logging
-import fcntl
 import struct
-import datetime
-
-
+import subprocess
+import sys
+import time
 
 from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.server import ThreadedServer
+
+import net
 
 
 class Simulation():
@@ -40,8 +38,8 @@ class Simulation():
 	distribute simulation accross the network.
 	"""
 
-	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model":"robot.blend", \
-		"config_name":"MouseDefConfig", "sim_type":"run", "registry":False, "service":False, \
+	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend",
+			   "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
 		"logfile":"stdout", "fullscreen":False, "verbose": "INFO", "save":False}
 
 
