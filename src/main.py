@@ -26,8 +26,8 @@ keyboard = bge.logic.keyboard
 def save():
 	"Save te simulation results"
 	
-	f = open([owner["config"].save_path, 'wb')
-	pickle.dump([owner["config"] time.time()], f)
+	f = open([owner["config"].save_path], 'wb')
+	pickle.dump([owner["config"], time.time()], f)
 	f.close()
 
 
@@ -44,7 +44,7 @@ if owner["config"].debug:
 # Simulation interruption
 
 if eval(owner["config"].exit_condition) \
-	or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:
+	or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]\
 	or time.time() - owner["t_init"] > owner["config"].timeout
 
 	# save config
