@@ -24,7 +24,7 @@ keyboard = bge.logic.keyboard
 
 
 def save():
-    "Save te simulation results"
+    """Save te simulation results"""
 
     f = open([owner["config"].save_path], 'wb')
     pickle.dump([owner["config"], time.time()], f)

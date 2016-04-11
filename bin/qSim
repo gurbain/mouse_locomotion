@@ -17,6 +17,8 @@ import logging
 import sys
 
 from plumbum import cli
+
+from src.sim import Simulation
 # Add src folder to path
 from os.path import dirname, realpath
 
@@ -24,11 +26,9 @@ root = dirname(dirname(realpath(__file__)))
 src = root + "/src"
 sys.path.append(src)
 
-import sim
-
 
 class SimCli(cli.Application):
-    "This script provide a framework for quadruped locomotion driven by reservoir computing"
+    """This script provide a framework for quadruped locomotion driven by reservoir computing"""
 
     # Default CLI application options
     DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend", "root_dir": root,
@@ -87,7 +87,7 @@ class SimCli(cli.Application):
             %(filename)s:%(lineno)d] %(message)s")
 
         # Start servers if called
-        s = sim.Simulation(self.opt)
+        s = Simulation(self.opt)
         if self.opt["registry"]:
             s.start_registry()
         elif self.opt["service"]:

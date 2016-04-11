@@ -15,10 +15,10 @@ import numpy as np
 
 
 class Matsuoka:
-    "This class represents the mouse brain and its current behaviour in the control process"
+    """This class represents the mouse brain and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_):
-        "Class initialization"
+        """Class initialization"""
 
         self.scene = scene_
         self.config = config_
@@ -41,7 +41,7 @@ class Matsuoka:
         self.iter_num = int(self.time_interval / self.h)
 
     def update(self):
-        "Update control signals and forces"
+        """Update control signals and forces"""
 
         for i in range(self.iter_num):
             self.x += self.h * (- self.x + self.c - self.A.dot(self.y) - self.b * self.v) / self.tau
@@ -51,10 +51,10 @@ class Matsuoka:
 
 
 class Brain:
-    "This class represents the mouse brain and its current behaviour in the control process"
+    """This class represents the mouse brain and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_):
-        "Class initialization"
+        """Class initialization"""
 
         self.n_iter = 0
         self.scene = scene_
@@ -66,7 +66,7 @@ class Brain:
         self.state = np.zeros((self.n_osc, 1))
 
     def update(self):
-        "Update control signals and forces"
+        """Update control signals and forces"""
 
         # Write control signals into y
         self.osc.update()

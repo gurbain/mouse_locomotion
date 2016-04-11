@@ -18,8 +18,8 @@ import bpy
 
 
 def create_population(n_pop_=10):
-    "Duplicate the model to create population. Speed up the process when simulation is fast \
-    and computers number is limited"
+    """Duplicate the model to create population. Speed up the process when simulation is fast \
+    and computers number is limited"""
 
     # Hide ground, lamps and camera
     bpy.data.objects["obj_ground"].hide = True
@@ -47,7 +47,7 @@ def create_population(n_pop_=10):
 
 
 def start_player():
-    "Start blender game engine from Blender"
+    """Start blender game engine from Blender"""
 
     bpy.context.scene.render.engine = 'BLENDER_GAME'
     bpy.ops.view3d.game_start()

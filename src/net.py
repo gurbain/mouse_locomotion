@@ -49,7 +49,7 @@ class SimManager(Thread):
     """
 
     def __init__(self):
-        "Create sim manager parameters and start registry server"
+        """Create sim manager parameters and start registry server"""
 
         # Simulation list stacks
         # NB: FIFO: append answer on the left and remove the right one
@@ -79,11 +79,11 @@ class SimManager(Thread):
         self.mutex_rqt = Lock()
         threading.Thread.__init__(self)
 
-        logging.debug("Sim Manager initialization achieved. Number of active threads = " + \
+        logging.debug("Sim Manager initialization achieved. Number of active threads = " +
                       str(threading.active_count()))
 
     def __refresh_cloud_state(self):
-        "Refresh the cloud state list using the registry server"
+        """Refresh the cloud state list using the registry server"""
 
         # Check network with rpyc registry thread
         self.mutex_server_list.acquire()
@@ -128,7 +128,7 @@ class SimManager(Thread):
         logging.debug("Server list " + str(self.server_list) + " cloud " + str(self.cloud_state))
 
     def __select_candidate(self):
-        "Select the most suited candidate in the simulation cloud. "
+        """Select the most suited candidate in the simulation cloud. """
 
         # We check registry_server for new server (adding it as empty one)
         self.__refresh_cloud_state()
@@ -150,7 +150,7 @@ class SimManager(Thread):
         return 0
 
     def response_sim(self, rsp):
-        "Callback function called when a simulation has finished"
+        """Callback function called when a simulation has finished"""
 
         # We add the rsp from the simulation to the rsp list
         self.mutex_rsp.acquire()
@@ -167,22 +167,21 @@ class SimManager(Thread):
 
                 # Decrease thread number in cloud_state dict
                 if server_hash in self.cloud_state:
-                    logging.info("Response received from server " + str(self.cloud_state[server_hash]["address"]) \
-                                 + ":" + str(self.cloud_state[server_hash]["port"]) + " with " + \
+                    logging.info("Response received from server " + str(self.cloud_state[server_hash]["address"]) +
+                                 ":" + str(self.cloud_state[server_hash]["port"]) + " with " +
                                  str(self.cloud_state[server_hash]["n_threads"]) + " threads: " + str(rsp.value))
                     self.mutex_cloud_state.acquire()
                     self.cloud_state[server_hash]["n_threads"] -= 1
                     self.mutex_cloud_state.release()
 
                 else:
-                    logging.error("Server " + str(self.cloud_state[server_hash]["address"]) \
-                                  + ":" + str(self.cloud_state[server_hash]["address"]) + " not in the list \
-						anymore. Please check connection to ensure simulation results.")
-
-
+                    logging.error("Server " + str(self.cloud_state[server_hash]["address"]) +
+                                  ":" + str(self.cloud_state[server_hash]["address"]) +
+                                  " not in the list anymore. Please check connection to ensure simulation results.")
                     # Close connection and listening thread
                     # As soon as we stop the thread, the function is directly exited because the callback
                     # function is handle by the thread itself
+
                 logging.info("Deletion of connection: " + str(item["conn"].__hash__()) + "!")
                 item["conn"].close()
                 t = item["thread"]
@@ -193,13 +192,13 @@ class SimManager(Thread):
 
         # If no candidate in the list
         if not conn_found:
-            logging.error("Connection " + str(rsp._conn.__hash__()) + " not in the list \
-				anymore. Please check connection to ensure simulation results.")
+            logging.error("Connection " + str(rsp._conn.__hash__()) +
+                          " not in the list anymore. Please check connection to ensure simulation results.")
 
         return
 
     def simulate(self, sim_list):
-        "Perform synchronous simulation with the given list and return response list"
+        """Perform synchronous simulation with the given list and return response list"""
 
         l_sim_list = len(sim_list)
 
@@ -221,7 +220,7 @@ class SimManager(Thread):
                 try:
                     time.sleep(self.sim_prun_t)
                 except KeyboardInterrupt:
-                    logging.warning("Simulation interrupted by user! Please clean up " + \
+                    logging.warning("Simulation interrupted by user! Please clean up " +
                                     "remote computers.")
                     self.stop()
                     to_init = time.time()
@@ -238,24 +237,24 @@ class SimManager(Thread):
 
         # If it isn't print error message and return
         else:
-            logging.error("Simulation manager hasn't not finished yet with the \
-				simulation. Try again later")
+            logging.error("Simulation manager hasn't not finished yet with the" +
+                          "simulation. Try again later")
 
             return 0
 
     def get_cloud_state(self):
-        "Return a dict with available machines in the network and their current usage"
+        """Return a dict with available machines in the network and their current usage"""
 
         return self.cloud_state
 
     def stop(self):
-        "Stop managing loop"
+        """Stop managing loop"""
 
         self.mng_stop = True
 
     def run(self):
-        "Run the managing loop. Check rqt stack for simulation request. Select the candidate \
-        server for simulation. Start simulation."
+        """Run the managing loop. Check rqt stack for simulation request. Select the candidate \
+        server for simulation. Start simulation."""
 
         logging.info("Start Sim Manager main loop")
 
@@ -272,8 +271,8 @@ class SimManager(Thread):
 
                     # We found a server
                     self.server_dispo = True
-                    logging.info("Starting sim service on server: " + \
-                                 str(self.cloud_state[server_hash]["address"]) + ":" + \
+                    logging.info("Starting sim service on server: " +
+                                 str(self.cloud_state[server_hash]["address"]) + ":" +
                                  str(self.cloud_state[server_hash]["port"]))
 
                     # Connect to candidate server
@@ -380,7 +379,7 @@ class SimService(rpyc.Service):
         return s.get_results()
 
 
-### Testing functions ###
+# Testing functions ###
 
 def start_manager():
     N_SIM = 400

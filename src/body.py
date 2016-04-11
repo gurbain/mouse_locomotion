@@ -16,18 +16,18 @@ from muscle import Muscle
 
 
 class Leg:
-    "This class represents a generic leg and its current behaviour in the control process"
+    """This class represents a generic leg and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_):
-        "Class initialization"
+        """Class initialization"""
 
         self.n_iter = 0
         self.scene = scene_
         self.config = config_
         self.debug = self.config.debug
 
-    def update(self):
-        "Update control signals and forces"
+    def update(self, ctrl_sig_):
+        """Update control signals and forces"""
 
         self.n_iter += 1
         if self.debug:
@@ -35,12 +35,12 @@ class Leg:
 
 
 class Backleg(Leg):
-    "This class represents a generic backleg and its current behaviour in the control process"
+    """This class represents a generic backleg and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_, orien_):
-        "Class initialization"
+        """Class initialization"""
 
-        super(Backleg, self).__init__(scene_, config_)
+        Leg.__init__(self, scene_, config_)
         self.orien = orien_
 
         # Create the muscles objects following config
@@ -56,10 +56,10 @@ class Backleg(Leg):
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
-        "Update control signals and forces"
+        """Update control signals and forces"""
 
         for i in range(len(self.muscles)):
-            if self.brain_sig[i] == None:
+            if self.brain_sig[i] is None:
                 ctrl_sig = 0
             else:
                 ctrl_sig = ctrl_sig_[self.brain_sig[i]]
@@ -67,17 +67,17 @@ class Backleg(Leg):
 
         self.n_iter += 1
         if self.debug:
-            print("[DEBUG] Backleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " \
-                  + str(self.brain_sig))
+            print("[DEBUG] Backleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
+                  str(self.brain_sig))
 
 
 class Foreleg(Leg):
-    "This class represents a generic foreleg and its current behaviour in the control process"
+    """This class represents a generic foreleg and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_, orien_):
-        "Class initialization"
+        """Class initialization"""
 
-        super(Backleg, self).__init__(scene_, config_)
+        Leg.__init__(self, scene_, config_)
         self.orien = orien_
 
         # Create the muscles objects following config
@@ -93,10 +93,10 @@ class Foreleg(Leg):
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
-        "Update control signals and forces"
+        """Update control signals and forces"""
 
         for i in range(len(self.muscles)):
-            if self.brain_sig[i] == None:
+            if self.brain_sig[i] is None:
                 ctrl_sig = 0
             else:
                 ctrl_sig = ctrl_sig_[self.brain_sig[i]]
@@ -104,15 +104,15 @@ class Foreleg(Leg):
 
         self.n_iter += 1
         if self.debug:
-            print("[DEBUG] Foreleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " \
-                  + str(self.brain_sig))
+            print("[DEBUG] Foreleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
+                  str(self.brain_sig))
 
 
 class Body:
-    "This class represents the mouse body and its current behaviour in the control process"
+    """This class represents the mouse body and its current behaviour in the control process"""
 
     def __init__(self, scene_, config_):
-        "Class initialization"
+        """Class initialization"""
 
         self.n_iter = 0
         self.scene = scene_
@@ -135,14 +135,14 @@ class Body:
             self.muscles.append(Muscle(self.scene, muscle_config))
 
     def update(self):
-        "Update control signals and forces"
+        """Update control signals and forces"""
 
         self.brain.update()
 
         for muscle in self.muscles:
             muscle.update()
 
-        ctrl_sig = [float(self.brain.state[0]), float(self.brain.state[1]), float(self.brain.state[2]), \
+        ctrl_sig = [float(self.brain.state[0]), float(self.brain.state[1]), float(self.brain.state[2]),
                     float(self.brain.state[3])]
         # 2 0 /
         # 2 0 /

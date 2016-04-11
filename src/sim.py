@@ -30,212 +30,205 @@ from rpyc.utils.server import ThreadedServer
 import net
 
 
-class Simulation():
-	"""
-	Main class for high level simulation. It receives a set of simulation options as defined
-	in the DEF_OPT dict. Methods start_service() and start_registry can be launched independently 
-	to run service and registry	servers. Other methods require a call to start_manager which 
-	distribute simulation accross the network.
-	"""
+class Simulation:
+    """
+    Main class for high level simulation. It receives a set of simulation options as defined
+    in the DEF_OPT dict. Methods start_service() and start_registry can be launched independently
+    to run service and registry	servers. Other methods require a call to start_manager which
+    distribute simulation accross the network.
+    """
 
-	DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend",
-			   "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
-		"logfile":"stdout", "fullscreen":False, "verbose": "INFO", "save":False}
+    DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend",
+               "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
+               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
 
+    def __init__(self, opt_=DEF_OPT):
+        """Initialize with CLI options"""
+        self.opt = opt_
+        self.ipaddr = self.__get_ip_address('eth0')
+        self.pid = os.getpid()
 
-	def __init__(self, opt_=DEF_OPT):
-		"Initialize with CLI options"
+    def __get_ip_address(self, ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            ip_name = socket.inet_ntoa(fcntl.ioctl(
+                s.fileno(),
+                0x8915,  # SIOCGIFADDR
+                struct.pack('256s', ifname[:15])
+            )[20:24])
+        except Exception as e:
+            logging.warning("No ethernet connection!")
+            ip_name = "localhost"
 
-		self.opt = opt_
-		self.ipaddr = self.__get_ip_address('eth0')
-		self.pid = os.getpid()
+        return ip_name
 
-	def __get_ip_address(self, ifname):
-		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		try:
-			ip_name = socket.inet_ntoa(fcntl.ioctl(
-				s.fileno(),
-				0x8915,  # SIOCGIFADDR
-	 			struct.pack('256s', ifname[:15])
-			)[20:24])
-		except Exception as e:
-			logging.warning("No ethernet connection!")
-			ip_name = "localhost"
-		
-		return ip_name
+    def start_service(self):
+        """Start a service server"""
 
-	def start_service(self):
-		"Start a service server"
-		
-		logging.info("Start service server on address: " + str(self.ipaddr) + ":18861")
-		self.t = ThreadedServer(net.SimService, port=18861, auto_register=True)
-		self.t.start()
+        logging.info("Start service server on address: " + str(self.ipaddr) + ":18861")
+        self.t = ThreadedServer(net.SimService, port=18861, auto_register=True)
+        self.t.start()
 
-	def start_registry(self):
-		"Start a registery server"
+    def start_registry(self):
+        """Start a registery server"""
 
-		logging.info("Start registry server on address: " + str(self.ipaddr) + ":" + str(REGISTRY_PORT))
-		self.r = net.SimRegistry()
-		self.r.start()
+        logging.info("Start registry server on address: " + str(self.ipaddr) + ":" + str(REGISTRY_PORT))
+        self.r = net.SimRegistry()
+        self.r.start()
 
-	def start_manager(self):
-		"Start a simulation manager"
+    def start_manager(self):
+        """Start a simulation manager"""
 
-		self.t_sim_init = time.time()
-		logging.info("Start sim manager server with PID " + str(self.pid))
-		self.sm = net.SimManager()
-		self.sm.start()
-		time.sleep(1)
+        self.t_sim_init = time.time()
+        logging.info("Start sim manager server with PID " + str(self.pid))
+        self.sm = net.SimManager()
+        self.sm.start()
+        time.sleep(1)
 
-	def stop_manager(self):
-		"Stop the simulation manager"
+    def stop_manager(self):
+        """Stop the simulation manager"""
 
-		self.sm.stop()
-		time.sleep(1)
-		self.sim_time = time.time() - self.t_sim_init
-	
-	def run_sim(self):
-		"Run a simple one shot simulation"
+        self.sm.stop()
+        time.sleep(1)
+        self.sim_time = time.time() - self.t_sim_init
 
-		# Start manager
-		self.start_manager()
+    def run_sim(self):
+        """Run a simple one shot simulation"""
 
-		# Simulate
-		sim_list = []
-		sim_list.append(self.opt)
-		res_list = self.sm.simulate(sim_list)
+        # Start manager
+        self.start_manager()
 
-		# Stop and disply results
-		self.stop_manager()
-		time.sleep(1)
-		sys.stdout.write("Resultats: ")
-		for i in res_list:
-			sys.stdout.write(str(i) + " ")
-		print ("\n[INFO] Simulation Finished!")
+        # Simulate
+        sim_list = [self.opt]
+        res_list = self.sm.simulate(sim_list)
 
-	def brain_opti_sim(self):
-		"Run an iterative simulation to optimize the muscles parameters"
+        # Stop and disply results
+        self.stop_manager()
+        time.sleep(1)
+        sys.stdout.write("Resultats: ")
+        for i in res_list:
+            sys.stdout.write(str(i) + " ")
+        print ("\n[INFO] Simulation Finished!")
 
-		# Set-up simulator options
-		exit = False
-		n_iter = 0
+    def brain_opti_sim(self):
+        """Run an iterative simulation to optimize the muscles parameters"""
 
-		# Start manager
-		self.start_manager()
+        # Set-up simulator options
+        stop_loop = False
+        n_iter = 0
 
-		# Offilne optimization loop
-		while exit == False:
+        # Start manager
+        self.start_manager()
 
-			# Create a population
+        # Offline optimization loop
+        while not stop_loop:
 
-			# Append the population to the sim list
-			sim_list = []
-			sim_list.append(self.opt)
+            # Create a population
 
-			# Run the simulation
-			res_list = self.sm.simulate(sim_list)
+            # Append the population to the sim list
+            sim_list = [self.opt]
 
-			# Exit condition is triggered in main.py
+            # Run the simulation
+            res_list = self.sm.simulate(sim_list)
 
-			# Check cost function and modify config if needed
-			if n_iter >= 0:
-				exit = True
-			n_iter += 1
-		
-		# Stop and disply results
-		sys.stdout.write("Resultats: ")
-		for i in res_list:
-			sys.stdout.write(str(i) + " ")
-		print ("[INFO] Simulation Finished!")
+            # Exit condition is triggered in main.py
 
+            # Check cost function and modify config if needed
+            if n_iter >= 0:
+                stop_loop = True
+            n_iter += 1
 
-	def muscle_opti_sim(self):
-		"Run an iterative simulation to optimize the muscles parameters"
+        # Stop and display results
+        sys.stdout.write("Resultats: ")
+        for i in res_list:
+            sys.stdout.write(str(i) + " ")
+        print ("[INFO] Simulation Finished!")
 
-		print("[INFO] This simulation is not implemented yet! Exiting...") 
+    def muscle_opti_sim(self):
+        """Run an iterative simulation to optimize the muscles parameters"""
+
+        print("[INFO] This simulation is not implemented yet! Exiting...")
 
 
-class BlenderSim():
-	"""
-	Main class for low level simulation. It receives a set of simulation options as defined
-	in the DEF_OPT dict. It can only start a simulation via a batch subprocess on localhost.
-	"""
+class BlenderSim:
+    """
+    Main class for low level simulation. It receives a set of simulation options as defined
+    in the DEF_OPT dict. It can only start a simulation via a batch subprocess on localhost.
+    """
 
-	def __init__(self, opt_):
-		"Initialize with  options"
+    def __init__(self, opt_):
+        """Initialize with  options"""
 
-		self.opt = opt_
-		dirname =  self.opt["root_dir"] + "/save/"
-		filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
-		if not os.path.exists(dirname):
-			os.makedirs(dirname)
-		self.opt["save_path"] = dirname + "/" + filename
+        self.opt = opt_
+        dirname = self.opt["root_dir"] + "/save/"
+        filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        self.opt["save_path"] = dirname + "/" + filename
 
-	def start_blenderplayer(self):
-		"Call blenderplayer via command line subprocess"
+    def start_blenderplayer(self):
+        """Call blenderplayer via command line subprocess"""
 
-		# Fetch blender game engine standalone path
-		args = [self.opt["blender_path"] + "blenderplayer"]
+        # Fetch blender game engine standalone path
+        args = [self.opt["blender_path"] + "blenderplayer"]
 
-		# Add arguments to command line
-		args.extend([
-			"-w", "1080", "600", "2000", "200",
-			"-g", "show_framerate", "=", "1",
-			"-g", "show_profile", "=", "1",
-			"-g", "show_properties", "=", "1",
-			"-g", "ignore_deprecation_warnings", "=", "0",
-			"-d",
-			])
-		if self.opt["fullscreen"]:
-			args.extend(["-f"])
-		args.extend([self.opt["blender_model"]])
-		args.extend(["-", self.opt["config_name"] + "()"])
-		args.extend([str(self.opt["verbose"]), str(self.opt["save_path"])])
-		args.extend(["FROM_START.PY"])
+        # Add arguments to command line
+        args.extend([
+            "-w", "1080", "600", "2000", "200",
+            "-g", "show_framerate", "=", "1",
+            "-g", "show_profile", "=", "1",
+            "-g", "show_properties", "=", "1",
+            "-g", "ignore_deprecation_warnings", "=", "0",
+            "-d",
+        ])
+        if self.opt["fullscreen"]:
+            args.extend(["-f"])
+        args.extend([self.opt["blender_model"]])
+        args.extend(["-", self.opt["config_name"] + "()"])
+        args.extend([str(self.opt["verbose"]), str(self.opt["save_path"])])
+        args.extend(["FROM_START.PY"])
 
-		# Start batch process and quit
-		print(args)
-		subprocess.call(args)
+        # Start batch process and quit
+        print(args)
+        subprocess.call(args)
 
+    def start_blender_with_player(self):
+        """Call blender via command line subprocess and start the game engine simulation"""
 
-	def start_blender_with_player(self):
-		"Call blender via command line subprocess and start the game engine simulation"
+        # Fetch blender game engine standalone path
+        args = [self.opt["blender_path"] + "blender"]
 
-		# Fetch blender game engine standalone path
-		args = [self.opt["blender_path"] + "blender"]
+        # Add arguments to command line
+        args.extend([self.opt["blender_model"]])
+        args.extend(["--python", "ge.py"])
+        args.extend(["--start_player()"])
 
-		# Add arguments to command line
-		args.extend([self.opt["blender_model"]])
-		args.extend(["--python", "ge.py"])
-		args.extend(["--start_player()"])
+        # Start batch process and quit
+        print(args)
+        subprocess.call(args)
 
-		# Start batch process and quit
-		print(args)
-		subprocess.call(args)
+    def create_pop(self):
+        """Call blender via command line subprocess and create a population out of a model"""
 
+        # Fetch blender game engine standalone path
+        args = [self.opt["blender_path"] + "blender"]
 
-	def create_pop(self):
-		"Call blender via command line subprocess and create a population out of a model"
+        # Add arguments to command line
+        args.extend(["-b"])
+        args.extend([self.opt["blender_model"]])
+        args.extend(["--python", "model.py"])
+        args.extend(["--create_pop()"])
 
-		# Fetch blender game engine standalone path
-		args = [self.opt["blender_path"] + "blender"]
+        # Start batch process and quit
+        print(args)
+        subprocess.call(args)
 
-		# Add arguments to command line
-		args.extend(["-b"])
-		args.extend([self.opt["blender_model"]])
-		args.extend(["--python", "model.py"])
-		args.extend(["--create_pop()"])
+    def get_results(self):
+        """This function reads the file saved in Blender at the end of the simulation to retrieve results"""
 
-		# Start batch process and quit
-		print(args)
-		subprocess.call(args)
+        # Retrieve filename
+        f = open(self.opt["save_path"], 'rb')
+        results = pickle.load(f)
+        f.close()
 
-	def get_results(self):
-		"This function reads the file saved in Blender at the end of the simulation to retrieve results"
-
-		# Retrieve filename
-		f = open(self.opt["save_path"], 'rb')
-		results = pickle.load(f)
-		f.close()
-
-		return results
+        return results
