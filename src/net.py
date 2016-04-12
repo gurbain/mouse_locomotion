@@ -23,6 +23,7 @@ from threading import Thread, Lock
 
 import rpyc
 from rpyc.lib import setup_logger
+from rpyc.utils.factory import DiscoveryError
 from rpyc.utils.registry import REGISTRY_PORT, DEFAULT_PRUNING_TIMEOUT
 from rpyc.utils.registry import UDPRegistryServer
 from rpyc.utils.server import ThreadedServer
@@ -90,7 +91,7 @@ class SimManager(Thread):
         try:
             self.server_list = rpyc.discover("BLENDERSIM")
             logging.debug("Server list " + str(self.server_list))
-        except rpyc.utils.factory.DiscoveryError:
+        except DiscoveryError:
             if self.reg_found:
                 logging.info("Simulation servers not found on the network!")
                 self.reg_found = False
