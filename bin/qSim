@@ -13,18 +13,20 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
-import logging
-import sys
-
-from plumbum import cli
-
-from src.sim import Simulation
 # Add src folder to path
 from os.path import dirname, realpath
+import sys
 
 root = dirname(dirname(realpath(__file__)))
 src = root + "/src"
 sys.path.append(src)
+
+import logging
+
+
+from plumbum import cli
+
+from sim import Simulation
 
 
 class SimCli(cli.Application):
