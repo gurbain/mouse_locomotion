@@ -294,25 +294,25 @@ class DampedSpringReducedTorqueMuscle:
 
         # Check if onject exist
         if not self.params["obj_1"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
-                + " Check your configuration file!")
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+                  " Check your configuration file!")
             self.active = False
         else:
             self.obj1 = self.scene.objects[self.params["obj_1"]]
         if not self.params["obj_2"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." \
-                + " Check your configuration file!")
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+                  " Check your configuration file!")
             self.active = False
         else:
             self.obj2 = self.scene.objects[self.params["obj_2"]]
 
         # Points of application in local coordinates
         if self.params["anch_1"] == None:
-            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name + \
-                "! Center is taken by default. This may results in erroneous simulation")
-                self.params["anch_1"] = [0.0, 0.0, 0.0]
+            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name +
+                  "! Center is taken by default. This may results in erroneous simulation")
+            self.params["anch_1"] = [0.0, 0.0, 0.0]
         if self.params["anch_2"] == None:
-            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name + \
+            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name +
                 "! Center is taken by default. This may results in erroneous simulation")
             self.params["anch_2"] = [0.0, 0.0, 0.0]
         self.app_point_1 = vec((self.params["anch_1"]))
@@ -424,8 +424,11 @@ class DampedSpringReducedTorqueMuscle:
 
 
 class Muscle(DampedSpringReducedTorqueMuscle):
+    def __init__(self, scene_, params_):
+        """Class initialization"""
+        DampedSpringReducedTorqueMuscle.__init__(self, scene_, params_)
 
 class Muscle(DampedSpringMuscle):
     def __init__(self, scene_, params_):
-        "Class initialization"
+        """Class initialization"""
         DampedSpringMuscle.__init__(self, scene_, params_)
