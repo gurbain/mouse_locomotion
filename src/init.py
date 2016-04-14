@@ -14,19 +14,21 @@
 # Add src folder to path
 import os
 import sys
-root = os.path.dirname(os.path.realpath(__file__))
-src =  root + "/src"
-sys.path.append(src)
-
+import bge
+import datetime
 import time
 
-import bge
+root = os.path.dirname(os.path.dirname(bge.logic.expandPath("//")))
+src =  root + "/src/"
+sys.path.append(src)
+
 from body import *
+from config import *
 
 # Default config when started directly from Blender
 CONFIG_NAME = "MouseDefConfig()"
-DEBUG_MODE = "False"
-dirname = "../save"
+DEBUG_MODE = "INFO"
+dirname = root + "/save"
 filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
 if not os.path.exists(dirname):
     os.makedirs(dirname)
@@ -55,7 +57,7 @@ if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
 owner["n_iter"] = 0
 owner["t_init"] = time.time()
 owner["config"] = eval(CONFIG_NAME)
-owner["config"].debug = eval(DEBUG_MODE)
+owner["config"].debug = DEBUG_MODE
 owner["config"].save_path = SAVE_NAME
 owner["cheesy"] = Body(scene, owner["config"])
 

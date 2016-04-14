@@ -179,7 +179,7 @@ class DampedSpringMuscle:
         else:
             self.obj1 = self.scene.objects[self.params["obj_1"]]
         if not self.params["obj_2"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
                   " Check your configuration file!")
             self.active = False
         else:
@@ -300,7 +300,7 @@ class DampedSpringReducedTorqueMuscle:
         else:
             self.obj1 = self.scene.objects[self.params["obj_1"]]
         if not self.params["obj_2"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
                   " Check your configuration file!")
             self.active = False
         else:

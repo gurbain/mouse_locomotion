@@ -21,7 +21,7 @@ class Config:
         # Simulation parameters
         self.name = ""
         self.sim_speed = 1.0
-        self.debug = False
+        self.debug = "INFO"
         self.exit_condition = "owner['n_iter'] > 500"
         self.timeout = 10
         self.save_path = "default"
@@ -72,10 +72,9 @@ class RobotDefConfig(Config):
         "Init Robot Default Config parameters"
 
         # Simulation parameters
-		super().__init__()
         self.name = "default_robot_simulation_config"
         self.sim_speed = 1.0
-        self.debug = True
+        self.debug = "INFO"
         self.exit_condition = "bge.logic.getCurrentScene().objects['obj_body'].worldPosition.z < -1.8"
 
         # Back legs
@@ -168,7 +167,7 @@ class RobotVertDefConfig(Config):
         Config.__init__(self)
         self.name = "default_robot_vert_simulation_config"
         self.sim_speed = 1.0
-        self.debug = True
+        self.debug = "INFO"
         self.exit_condition = "owner['n_iter'] > 2500"  # "bge.logic.getCurrentScene().objects['obj_body.B'].worldPosition.z < -1.8"
 
         # Back legs
@@ -308,7 +307,7 @@ class MouseDefConfig(Config):
         Config.__init__(self)
         self.name = "default_cheesy_simulation_config"
         self.sim_speed = 1.0
-        self.debug = True
+        self.debug = "INFO"
         self.exit_condition = "bge.logic.getCurrentScene().objects['obj_spine'].worldPosition.z < -1.8"
 
         # Back legs muscles
@@ -318,7 +317,7 @@ class MouseDefConfig(Config):
         BR_biceps = {"name": "B_biceps.R", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.R",
                      "anch_1" : [-0.14, -0.01, 0.06], "anch_2" : [-0.017, -0.13, 0.1], "k" : 0,
                      "c": 10, "kc": 0, "kl0": 1, "brain_sig": None}
-        BL_rectus = {"name": "B_rectus.L", "debug": False, "obj_1": "obj_hip", "obj_2": "obj_shin.L",
+        BL_rectus = {"name": "B_rectus.L", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.L",
                      "anch_1" : [0.15, -0.11, 0.17], "anch_2" : [0.017, -0.22, 0.16], "k" : 100,
                      "c" : 10, "kc" : 0, "kl0" : 0.6, "brain_sig" : None}
         BR_rectus = {"name": "B_rectus.R", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.R",
