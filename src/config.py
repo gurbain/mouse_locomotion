@@ -140,23 +140,23 @@ class RobotDefConfig(Config):
 
         liste = []
         for m in self.back_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.front_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.body["muscles"]:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
 
-        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],\
-                self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
+        for m in self.front_legs_muscles:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        for m in self.body["muscles"]:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],
+                  self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
 
         return liste
 
-    
+
 class RobotVertDefConfig(Config):
     """Default configuration file for robot_vert.blend"""
 
@@ -274,29 +274,28 @@ class RobotVertDefConfig(Config):
                         vert5_u, vert5_d, vert6_u, vert6_d, abdos]
         self.body = {"name": "Doggy", "muscles": body_muscles}
 
-
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
 
         liste = []
         for m in self.back_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.front_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.body["muscles"]:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
 
-        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],\
-                self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
+        for m in self.front_legs_muscles:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        for m in self.body["muscles"]:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],
+                  self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
 
         return liste
 
-        
+
 class MouseDefConfig(Config):
     """Default configuration file for cheesy.blend"""
 
@@ -312,23 +311,23 @@ class MouseDefConfig(Config):
 
         # Back legs muscles
         BL_biceps = {"name": "B_biceps.L", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.L",
-                     "anch_1" : [0.14, -0.01, 0.06], "anch_2" : [0.017, -0.13, 0.1], "k" : 0,
+                     "anch_1": [0.14, -0.01, 0.06], "anch_2": [0.017, -0.13, 0.1], "k": 0,
                      "c": 0, "kc": 0, "kl0": 1, "brain_sig": None}
         BR_biceps = {"name": "B_biceps.R", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.R",
-                     "anch_1" : [-0.14, -0.01, 0.06], "anch_2" : [-0.017, -0.13, 0.1], "k" : 0,
+                     "anch_1": [-0.14, -0.01, 0.06], "anch_2": [-0.017, -0.13, 0.1], "k": 0,
                      "c": 10, "kc": 0, "kl0": 1, "brain_sig": None}
         BL_rectus = {"name": "B_rectus.L", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.L",
-                     "anch_1" : [0.15, -0.11, 0.17], "anch_2" : [0.017, -0.22, 0.16], "k" : 100,
-                     "c" : 10, "kc" : 0, "kl0" : 0.6, "brain_sig" : None}
+                     "anch_1": [0.15, -0.11, 0.17], "anch_2": [0.017, -0.22, 0.16], "k": 100,
+                     "c": 10, "kc": 0, "kl0": 0.6, "brain_sig": None}
         BR_rectus = {"name": "B_rectus.R", "debug": False, "obj_1": "obj_hips", "obj_2": "obj_shin.R",
-                     "anch_1" : [-0.15, -0.11, 0.17], "anch_2" : [-0.017, -0.22, 0.16], "k" : 100,
-                     "c" : 10, "kc" : 0, "kl0" : 0.6, "brain_sig" : None}
+                     "anch_1": [-0.15, -0.11, 0.17], "anch_2": [-0.017, -0.22, 0.16], "k": 100,
+                     "c": 10, "kc": 0, "kl0": 0.6, "brain_sig": None}
         BL_gastrocenius = {"name": "B_gastro.L", "debug": False, "obj_1": "obj_thigh.L", "obj_2": "obj_shin_lower.L",
                            "anch_1": [-0.01, -0.05, -0.03], "anch_2": [0, 0.18, 0.015], "k": 0,
-                           "c" : 1, "kc" : 0, "kl0" : 0.2, "brain_sig" : None}
+                           "c": 1, "kc": 0, "kl0": 0.2, "brain_sig": None}
         BR_gastrocenius = {"name": "B_gastro.R", "debug": False, "obj_1": "obj_thigh.R", "obj_2": "obj_shin_lower.R",
                            "anch_1": [0.01, -0.05, -0.03], "anch_2": [0, 0.18, 0.015], "k": 0,
-                           "c" : 1, "kc" : 0, "kl0" : 0.2, "brain_sig" : None}
+                           "c": 1, "kc": 0, "kl0": 0.2, "brain_sig": None}
         BL_tensor = {"name": "B_tensor.L", "debug": False, "obj_1": "obj_thigh.L", "obj_2": "obj_shin_lower.L",
                      "anch_1": [-0.01, -0.16, -0.07], "anch_2": [0, 0.09, 0.015], "k": 0,
                      "c": 0, "kc": 0, "kl0": 1, "brain_sig": None}
@@ -373,24 +372,24 @@ class MouseDefConfig(Config):
                  "c": 100, "kc": 0, "kl0": 0.8}
         body_muscles = []  # neck1, neck2]
         self.body = {"name": "Cheesy", "muscles": body_muscles}
-   
+
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
 
         liste = []
         for m in self.back_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.front_legs_muscles:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
-		
-        for m in self.body["muscles"]:
-            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],\
-                m["k"], m["c"], m["kc"], m["kl0"]]
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
 
-        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],\
-                self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
+        for m in self.front_legs_muscles:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        for m in self.body["muscles"]:
+            liste += [m["anch_1"][0], m["anch_1"][1], m["anch_1"][2], m["anch_2"][0], m["anch_2"][1], m["anch_2"][2],
+                      m["k"], m["c"], m["kc"], m["kl0"]]
+
+        liste += [self.brain["n_osc"], self.brain["h"], self.brain["tau"], self.brain["T"], self.brain["a"],
+                  self.brain["b"], self.brain["c"], self.brain["aa"], self.brain["time_interval"]]
 
         return liste

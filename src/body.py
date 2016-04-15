@@ -12,7 +12,7 @@
 ##
 
 from brain import Brain
-from muscle import Muscle
+from muscle import DampedSpringReducedTorqueMuscle
 
 
 class Leg:
@@ -48,11 +48,11 @@ class Backleg(Leg):
         self.brain_sig = []
         if self.orien == "L":
             for muscle_config in self.config.back_leg_L_muscles:
-                self.muscles.append(Muscle(self.scene, muscle_config))
+                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
                 self.brain_sig.append(muscle_config["brain_sig"])
         else:  # R
             for muscle_config in self.config.back_leg_R_muscles:
-                self.muscles.append(Muscle(self.scene, muscle_config))
+                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
@@ -63,7 +63,7 @@ class Backleg(Leg):
                 ctrl_sig = 0
             else:
                 ctrl_sig = ctrl_sig_[self.brain_sig[i]]
-            self.muscles[i].update(ctrl_sig)
+            self.muscles[i].update(ctrl_sig=ctrl_sig)
 
         self.n_iter += 1
         if self.debug:
@@ -85,11 +85,11 @@ class Foreleg(Leg):
         self.brain_sig = []
         if self.orien == "L":
             for muscle_config in self.config.front_leg_L_muscles:
-                self.muscles.append(Muscle(self.scene, muscle_config))
+                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
                 self.brain_sig.append(muscle_config["brain_sig"])
         else:  # R
             for muscle_config in self.config.front_leg_R_muscles:
-                self.muscles.append(Muscle(self.scene, muscle_config))
+                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
@@ -100,7 +100,7 @@ class Foreleg(Leg):
                 ctrl_sig = 0
             else:
                 ctrl_sig = ctrl_sig_[self.brain_sig[i]]
-            self.muscles[i].update(ctrl_sig)
+            self.muscles[i].update(ctrl_sig=ctrl_sig)
 
         self.n_iter += 1
         if self.debug:
@@ -132,7 +132,7 @@ class Body:
         # Create the muscles objects following config
         self.muscles = []
         for muscle_config in self.config.body["muscles"]:
-            self.muscles.append(Muscle(self.scene, muscle_config))
+            self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
 
     def update(self):
         """Update control signals and forces"""

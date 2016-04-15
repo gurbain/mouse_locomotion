@@ -13,21 +13,71 @@
 ##
 
 import math
-
-import bge
 from mathutils import Vector as vec
 
+import bge
 
-class HillMuscle:
+
+class Muscle:
+    def __init__(self, scene_, params_):
+        """Class initialization"""
+        self.n_iter = 0
+        self.scene = scene_
+        self.params = params_
+        self.name = self.params["name"]
+        self.debug = self.params["debug"]
+        self.active = True
+
+        # Check if onject exist
+        if not self.params["obj_1"] in self.scene.objects:
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+                  " Check your configuration file!")
+            self.active = False
+        else:
+            self.obj1 = self.scene.objects[self.params["obj_1"]]
+        if not self.params["obj_2"] in self.scene.objects:
+            print(
+                "\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
+                " Check your configuration file!")
+            self.active = False
+        else:
+            self.obj2 = self.scene.objects[self.params["obj_2"]]
+
+        # Points of application in local coordinates
+        if self.params["anch_1"] is None:
+            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name +
+                  "! Center is taken by default. This may results in erroneous simulation")
+            self.params["anch_1"] = [0.0, 0.0, 0.0]
+        if self.params["anch_2"] is None:
+            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name +
+                  "! Center is taken by default. This may results in erroneous simulation")
+            self.params["anch_2"] = [0.0, 0.0, 0.0]
+        self.app_point_1 = vec((self.params["anch_1"]))
+        self.app_point_2 = vec((self.params["anch_2"]))
+
+        if self.active:
+            self.app_point_1_world = self.obj1.worldTransform * self.app_point_1  # global coordinates of app point 1 in m
+            self.app_point_2_world = self.obj2.worldTransform * self.app_point_2  # global coordinates of app point 2 in m
+
+    def draw_muscle(self, color_=[256, 0, 0]):
+        bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
+
+    def compute_step_energy(self):
+        return 0
+
+    def update(self, **kwargs):
+        # Here, we update the muscle forces given geometry and control signal
+        self.n_iter += 1
+
+
+class HillMuscle(Muscle):
     """This class implements Hill Model for muscle force """
 
     def __init__(self, scene_, params_):
         """Class initialization. Parameters can be found in D.F.B. Haeufle, M. Günther, A. Bayer, S. Schmitt (2014) \
         Hill-type muscle model with serial damping and eccentric force-velocity relation. Journal of Biomechanics"""
 
-        self.n_iter = 0
-        self.scene = scene_
-        self.params = params_
+        Muscle.__init__(self, scene_, params_)
 
         # Contractile Element (CE)
         self.CE_F_max = 1420  # F_max in [N] for Extensor (Kistemaker et al., 2006)
@@ -68,70 +118,75 @@ class HillMuscle:
         self.SEE_KSEEnl = self.SEE_DeltaF_SEE0 / (self.SEE_DeltaU_SEEnll * self.SEE_l_SEE0) ** self.SEE_v_SEE
         self.SEE_KSEEl = self.SEE_DeltaF_SEE0 / (self.SEE_DeltaU_SEEl * self.SEE_l_SEE0)
 
-    def update(self, ctrl_sig):
-        """Update control signals and forces"""
-
-        # Here, we update the muscle forces given geometry and control signal
-        self.n_iter += 1
-
-    # print("Muscle iteration: " + str(self.n_iter))
-
-
-    def update(self, l_CE, l_MTC, dot_l_MTC, q):
+    def update(self, **kwargs):
         """Computations are based on D.F.B. Haeufle, M. Günther, A. Bayer, S. Schmitt (2014) \
         Hill-type muscle model with serial damping and eccentric force-velocity relation. Journal of Biomechanics"""
-
-        # Isometric force (Force length relation)
-        if l_CE >= self.CE_l_CEopt:  # descending branch
-            F_isom = math.exp(-(abs(((l_CE / self.CE_l_CEopt) - 1) / self.CE_DeltaW_limb_des)) ** self.CE_v_CElimb_des)
-        else:  # ascending branch
-            F_isom = math.exp(-(abs(((l_CE / self.CE_l_CEopt) - 1) / self.CE_DeltaW_limb_asc)) ** self.CE_v_CElimb_asc)
-
-        # Force of the parallel elastic element PEE
-        if l_CE >= self.PEE_l_PEE0:
-            F_PEE = self.PEE_K_PEE * (l_CE - self.PEE_l_PEE0) ** self.PEE_v_PEE
-        else:  # shorter than slack length
-            F_PEE = 0
-
-        # Force of the serial elastic element SEE
-        l_SEE = abs(l_MTC - l_CE)  # SEE length
-        if (l_SEE > self.SEE_l_SEE0) and (l_SEE < self.SEE_l_SEEnll):  # non-linear part
-            F_SEE = self.SEE_KSEEnl * ((l_SEE - self.SEE_l_SEE0) ** self.SEE_v_SEE)
-        elif l_SEE >= self.SEE_l_SEEnll:  # linear part
-            F_SEE = self.SEE_DeltaF_SEE0 + self.SEE_KSEEl * (l_SEE - self.SEE_l_SEEnll)
-        else:  # salck length
-            F_SEE = 0
-
-        # Hill Parameters concentric contraction
-        if l_CE < self.CE_l_CEopt:
-            A_rel = 1
+        if hasattr(kwargs, "l_CE"):
+            l_CE = kwargs["l_CE"]
         else:
-            A_rel = F_isom
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: l_CE isn't defined." +
+                  " Check your configuration file!")
+            self.active = False
+            l_CE = 0
 
-        A_rel = A_rel * self.CE_A_rel0 * 1 / 4 * (1 + 3 * q)
-        B_rel = self.CE_B_rel0 * 1 * 1 / 7 * (3 + 4 * q)
-
-        # calculate CE contraction velocity
-        D0 = self.CE_l_CEopt * B_rel * self.SDE_d_SEmax * (
-            self.SDE_R_SE + (1 - self.SDE_R_SE) * (q * F_isom + F_PEE / self.CE_F_max))
-        C2 = self.SDE_d_SEmax * (self.SDE_R_SE - (A_rel - F_PEE / self.CE_F_max) * (1 - self.SDE_R_SE))
-        C1 = - C2 * dot_l_MTC - D0 - F_SEE + F_PEE - self.CE_F_max * A_rel
-        C0 = D0 * dot_l_MTC + self.CE_l_CEopt * B_rel * (F_SEE - F_PEE - self.CE_F_max * q * F_isom)
-
-        # solve the quadratic equation
-        if (C1 ** 2 - 4 * C2 * C0) < 0:
-            dot_l_CE = 0
-        # warning('the quadratic equation in the muscle model would result in a complex solution to compensate, the CE contraction velocity was set to zero')
+        if hasattr(kwargs, "l_MTC"):
+            l_MTC = kwargs["l_MTC"]
         else:
-            dot_l_CE = (- C1 - math.sqrt(C1 ** 2 - 4 * C2 * C0)) / (2 * C2)
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: l_MTC isn't defined." +
+                  " Check your configuration file!")
+            self.active = False
+            l_MTC = 0
 
-        # in case of an eccentric contraction:
-        if dot_l_CE > 0:
-            # calculate new Hill-parameters (asymptotes of the hyperbola)
-            B_rel = (q * F_isom * (1 - self.CE_F_eccentric) / (q * F_isom + A_rel) * B_rel / self.CE_S_eccentric)
-            A_rel = - self.CE_F_eccentric * q * F_isom
+        if hasattr(kwargs, "dot_l_MTC"):
+            dot_l_MTC = kwargs["dot_l_MTC"]
+        else:
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: dot_l_MTC isn't defined." +
+                  " Check your configuration file!")
+            self.active = False
+            dot_l_MTC = 0
 
-            # calculate CE eccentric velocity
+        if hasattr(kwargs, "q"):
+            q = kwargs["q"]
+        else:
+            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: q isn't defined." +
+                  " Check your configuration file!")
+            self.active = False
+            q = 0
+
+        if self.active:
+            # Isometric force (Force length relation)
+            if l_CE >= self.CE_l_CEopt:  # descending branch
+                F_isom = math.exp(
+                    -(abs(((l_CE / self.CE_l_CEopt) - 1) / self.CE_DeltaW_limb_des)) ** self.CE_v_CElimb_des)
+            else:  # ascending branch
+                F_isom = math.exp(
+                    -(abs(((l_CE / self.CE_l_CEopt) - 1) / self.CE_DeltaW_limb_asc)) ** self.CE_v_CElimb_asc)
+
+            # Force of the parallel elastic element PEE
+            if l_CE >= self.PEE_l_PEE0:
+                F_PEE = self.PEE_K_PEE * (l_CE - self.PEE_l_PEE0) ** self.PEE_v_PEE
+            else:  # shorter than slack length
+                F_PEE = 0
+
+            # Force of the serial elastic element SEE
+            l_SEE = abs(l_MTC - l_CE)  # SEE length
+            if (l_SEE > self.SEE_l_SEE0) and (l_SEE < self.SEE_l_SEEnll):  # non-linear part
+                F_SEE = self.SEE_KSEEnl * ((l_SEE - self.SEE_l_SEE0) ** self.SEE_v_SEE)
+            elif l_SEE >= self.SEE_l_SEEnll:  # linear part
+                F_SEE = self.SEE_DeltaF_SEE0 + self.SEE_KSEEl * (l_SEE - self.SEE_l_SEEnll)
+            else:  # salck length
+                F_SEE = 0
+
+            # Hill Parameters concentric contraction
+            if l_CE < self.CE_l_CEopt:
+                A_rel = 1
+            else:
+                A_rel = F_isom
+
+            A_rel = A_rel * self.CE_A_rel0 * 1 / 4 * (1 + 3 * q)
+            B_rel = self.CE_B_rel0 * 1 * 1 / 7 * (3 + 4 * q)
+
+            # calculate CE contraction velocity
             D0 = self.CE_l_CEopt * B_rel * self.SDE_d_SEmax * (
                 self.SDE_R_SE + (1 - self.SDE_R_SE) * (q * F_isom + F_PEE / self.CE_F_max))
             C2 = self.SDE_d_SEmax * (self.SDE_R_SE - (A_rel - F_PEE / self.CE_F_max) * (1 - self.SDE_R_SE))
@@ -143,82 +198,67 @@ class HillMuscle:
                 dot_l_CE = 0
             # warning('the quadratic equation in the muscle model would result in a complex solution to compensate, the CE contraction velocity was set to zero')
             else:
-                dot_l_CE = (- C1 + math.sqrt(C1 ** 2 - 4 * C2 * C0)) / (
-                    2 * C2)  # note that here +sqrt gives the correct solution
+                dot_l_CE = (- C1 - math.sqrt(C1 ** 2 - 4 * C2 * C0)) / (2 * C2)
 
-        # Contractile element force
-        F_CE = self.CE_F_max * (((q * F_isom + A_rel) / (1 - dot_l_CE / (self.CE_l_CEopt * B_rel))) - A_rel)
+            # in case of an eccentric contraction:
+            if dot_l_CE > 0:
+                # calculate new Hill-parameters (asymptotes of the hyperbola)
+                B_rel = (q * F_isom * (1 - self.CE_F_eccentric) / (q * F_isom + A_rel) * B_rel / self.CE_S_eccentric)
+                A_rel = - self.CE_F_eccentric * q * F_isom
 
-        # Force of the serial damping element
-        F_SDE = self.SDE_d_SEmax * ((1 - self.SDE_R_SE) * ((F_CE + F_PEE) / self.CE_F_max) + self.SDE_R_SE) * (
-            dot_l_MTC - dot_l_CE)
-        F_MTC = F_SEE + F_SDE
+                # calculate CE eccentric velocity
+                D0 = self.CE_l_CEopt * B_rel * self.SDE_d_SEmax * (
+                    self.SDE_R_SE + (1 - self.SDE_R_SE) * (q * F_isom + F_PEE / self.CE_F_max))
+                C2 = self.SDE_d_SEmax * (self.SDE_R_SE - (A_rel - F_PEE / self.CE_F_max) * (1 - self.SDE_R_SE))
+                C1 = - C2 * dot_l_MTC - D0 - F_SEE + F_PEE - self.CE_F_max * A_rel
+                C0 = D0 * dot_l_MTC + self.CE_l_CEopt * B_rel * (F_SEE - F_PEE - self.CE_F_max * q * F_isom)
 
-        return F_MTC
+                # solve the quadratic equation
+                if (C1 ** 2 - 4 * C2 * C0) < 0:
+                    dot_l_CE = 0
+                # warning('the quadratic equation in the muscle model would result in a complex solution to compensate, the CE contraction velocity was set to zero')
+                else:
+                    dot_l_CE = (- C1 + math.sqrt(C1 ** 2 - 4 * C2 * C0)) / (
+                        2 * C2)  # note that here +sqrt gives the correct solution
+
+            # Contractile element force
+            F_CE = self.CE_F_max * (((q * F_isom + A_rel) / (1 - dot_l_CE / (self.CE_l_CEopt * B_rel))) - A_rel)
+
+            # Force of the serial damping element
+            F_SDE = self.SDE_d_SEmax * ((1 - self.SDE_R_SE) * ((F_CE + F_PEE) / self.CE_F_max) + self.SDE_R_SE) * (
+                dot_l_MTC - dot_l_CE)
+            F_MTC = F_SEE + F_SDE
+
+            return F_MTC
 
 
-class DampedSpringMuscle:
+class DampedSpringMuscle(Muscle):
     """This class implements a simple muscle composed by a spring and a damping in parallel"""
 
     def __init__(self, scene_, params_):
         """Class initialization. Requires scene, controller as well as two object and the local point of application \
         of the spring forces"""
-
-        self.n_iter = 0
-        self.scene = scene_
-        self.params = params_
-        self.name = self.params["name"]
-        self.debug = self.params["debug"]
-        self.active = True
-
-        # Check if onject exist
-        if not self.params["obj_1"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
-                  " Check your configuration file!")
-            self.active = False
-        else:
-            self.obj1 = self.scene.objects[self.params["obj_1"]]
-        if not self.params["obj_2"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
-                  " Check your configuration file!")
-            self.active = False
-        else:
-            self.obj2 = self.scene.objects[self.params["obj_2"]]
-
-        # Points of application in local coordinates
-        if self.params["anch_1"] is None:
-            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name +
-                  "! Center is taken by default. This may results in erroneous simulation")
-            self.params["anch_1"] = [0.0, 0.0, 0.0]
-        if self.params["anch_2"] is None:
-            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name +
-                  "! Center is taken by default. This may results in erroneous simulation")
-            self.params["anch_2"] = [0.0, 0.0, 0.0]
-        self.app_point_1 = vec((self.params["anch_1"]))
-        self.app_point_2 = vec((self.params["anch_2"]))
+        Muscle.__init__(self, scene_, params_)
 
         # Model constants and variables
         self.k = self.params["k"]  # scalar in N/m
-        self.c = self.params["c"]; # scalar in N.s/m
+        self.c = self.params["c"]  # scalar in N.s/m
         self.k_cont = self.params["kc"]  # no dimension
         if self.active:
-            self.app_point_1_world = self.obj1.worldTransform * self.app_point_1  # global coordinates of app point 1 in m
-            self.app_point_2_world = self.obj2.worldTransform * self.app_point_2  # global coordinates of app point 2 in m
             self.l = self.app_point_2_world - self.app_point_1_world  # global coordinate vector between app points in m
             v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
             self.v_norm = v.dot(self.l.normalized()) * self.l.normalized()  # normal velocity vector in m/s
             self.l0 = self.params["kl0"] * self.l.length  # scalar in m
             self.l_cont = self.l0  # scalar in m
 
-    def draw_muscle(self, color_=[256, 0, 0]):
-        bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
-
-    def compute_step_energy(self):
-        return 0
-
-    def update(self, ctrl_sig=None):
+    def update(self, **kwargs):
         """Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
         fixing manually l0"""
+
+        if hasattr(kwargs, "ctrl_sig"):
+            ctrl_sig = kwargs["ctrl_sig"]
+        else:
+            ctrl_sig = None
 
         # If muscle has not been deactivated
         if self.active:
@@ -271,12 +311,11 @@ class DampedSpringMuscle:
                     "\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" + str(
                         self.app_point_2_world))
                 print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" + str(self.app_point_2))
-        else:
-            if self.debug:
-                print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
+        elif self.debug:
+            print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
 
 
-class DampedSpringReducedTorqueMuscle:
+class DampedSpringReducedTorqueMuscle(Muscle):
     """This class implements a simple muscle composed by a spring and a damper in parallel.\
     Forces and torques applied in the center of gravity are computed separately and a reduction\
     factor is added to torque to stabilise the process"""
@@ -285,150 +324,103 @@ class DampedSpringReducedTorqueMuscle:
         """Class initialization. Requires scene, controller as well as two object and the local point of application \
         of the spring forces"""
 
-        self.n_iter = 0
-        self.scene = scene_
-        self.params = params_
-        self.name = self.params["name"]
-        self.debug = self.params["debug"]
-        self.active = True
-
-        # Check if onject exist
-        if not self.params["obj_1"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
-                  " Check your configuration file!")
-            self.active = False
-        else:
-            self.obj1 = self.scene.objects[self.params["obj_1"]]
-        if not self.params["obj_2"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
-                  " Check your configuration file!")
-            self.active = False
-        else:
-            self.obj2 = self.scene.objects[self.params["obj_2"]]
-
-        # Points of application in local coordinates
-        if self.params["anch_1"] == None:
-            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name +
-                  "! Center is taken by default. This may results in erroneous simulation")
-            self.params["anch_1"] = [0.0, 0.0, 0.0]
-        if self.params["anch_2"] == None:
-            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name +
-                "! Center is taken by default. This may results in erroneous simulation")
-            self.params["anch_2"] = [0.0, 0.0, 0.0]
-        self.app_point_1 = vec((self.params["anch_1"]))
-        self.app_point_2 = vec((self.params["anch_2"]))
-
+        Muscle.__init__(self, scene_, params_)
         # Model constants and variables
         if "k" in self.params:
-            self.k = self.params["k"]; # scalar in N/m
+            self.k = self.params["k"]  # scalar in N/m
         else:
             self.k_cont = 100
         if "c" in self.params:
-            self.c = self.params["c"]; # scalar in N.s/m
+            self.c = self.params["c"]  # scalar in N.s/m
         else:
             self.k_cont = 10
         if "kc" in self.params:
-            self.k_cont = self.params["kc"] # no dimension
+            self.k_cont = self.params["kc"]  # no dimension
         else:
             self.k_cont = 0
         if "kt" in self.params:
-            self.damp_torque_fact = self.params["kt"] # no dimension
+            self.damp_torque_fact = self.params["kt"]  # no dimension
         else:
             self.damp_torque_fact = 0.1
-		
+
         if self.active:
-            self.app_point_1_world = self.obj1.worldTransform * self.app_point_1 # global coordinates of app point 1 in m
-            self.app_point_2_world = self.obj2.worldTransform * self.app_point_2 # global coordinates of app point 2 in m
-            self.l =  self.app_point_2_world - self.app_point_1_world # global coordinate vector between app points in m
+            self.l = self.app_point_2_world - self.app_point_1_world  # global coordinate vector between app points in m
             v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
-            self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized() # normal velocity vector in m/s
-            self.l0 = self.params["kl0"] * self.l.length; # scalar in m
-            self.l_cont = self.l0; # scalar in m
+            self.v_norm = v.dot(self.l.normalized()) * self.l.normalized()  # normal velocity vector in m/s
+            self.l0 = self.params["kl0"] * self.l.length  # scalar in m
+            self.l_cont = self.l0  # scalar in m
 
-        def draw_muscle(self, color_=[256,0,0]):
-            bge.render.drawLine(self.app_point_1_world, self.app_point_2_world, color_)
+    def update(self, **kwargs):
+        """Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
+        fixing manually l0"""
 
-        def compute_step_energy(self):
-            return 0
+        if hasattr(kwargs, "ctrl_sig"):
+            ctrl_sig = kwargs["ctrl_sig"]
+        else:
+            ctrl_sig = None
 
-        def update(self, ctrl_sig=None):
-            """Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
-            fixing manually l0"""
+        # If muscle has not been deactivated
+        if self.active:
+            # get control length
+            if ctrl_sig == None:
+                self.l_cont = self.l0  # by default, control length is the spring reference length
+            else:
+                self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
 
-            # If muscle has not been deactivated
-            if self.active:
+            # get length and velocity
+            self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
+            self.app_point_2_world = self.obj2.worldTransform * self.app_point_2
+            self.l = self.app_point_2_world - self.app_point_1_world
 
-                # get control length
-                if ctrl_sig == None:
-                    self.l_cont = self.l0 # by default, control length is the spring reference length
-                else:
-                    self.l_cont = self.l0 * (1 + self.k_cont * ctrl_sig)
+            # Center of gravity and lever arm
+            cg_1 = self.obj1.worldPosition
+            cg_2 = self.obj2.worldPosition
+            lever_1_vect = self.app_point_1_world - cg_1
+            lever_2_vect = self.app_point_2_world - cg_2
 
-                # get length and velocity
-                self.app_point_1_world = self.obj1.worldTransform * self.app_point_1
-                self.app_point_2_world = self.obj2.worldTransform * self.app_point_2
-                self.l =  self.app_point_2_world - self.app_point_1_world
+            # Damping must be in spring axis direction.
+            v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
+            self.v_norm = v.dot(self.l.normalized()) * self.l.normalized()
+            # print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
 
-                # Center of gravity and lever arm
-                cg_1 = self.obj1.worldPosition
-                cg_2 = self.obj2.worldPosition
-                lever_1_vect = self.app_point_1_world - cg_1
-                lever_2_vect = self.app_point_2_world - cg_2
+            # compute spring force
+            force_s = - (self.k * (self.l.length - self.l_cont)) * self.l.normalized()
 
-                # Damping must be in spring axis direction.
-                v = self.obj2.getVelocity(self.app_point_2) - self.obj1.getVelocity(self.app_point_1)
-                self.v_norm =  v.dot(self.l.normalized()) * self.l.normalized()
-                #print("l: " + str(self.l) + " norm: " + str(self.l.normalized()) + " v = " +  str(v) + "vdot" + str(v.dot(self.l.normalized())) +" vnorm: " + str(self.v_norm))
+            # compute damping force
+            force_d = - self.c * self.v_norm
 
-                # compute spring force
-                force_s = - (self.k * (self.l.length - self.l_cont) ) * self.l.normalized()
+            # compute total force
+            force = force_s + force_d
 
-                # compute damping force
-                force_d = - self.c * self.v_norm
+            # compute total torques
+            torque_1 = self.damp_torque_fact * lever_1_vect.cross(-force)
+            torque_2 = self.damp_torque_fact * lever_2_vect.cross(force)
 
-                # compute total force
-                force = force_s + force_d
+            # apply impusle on an object point only in traction
+            f_type = "Push"
+            if float((force * self.l.normalized())) < 0.0:
+                f_type = "Pull"
+                self.obj1.applyForce(- force)
+                self.obj2.applyForce(force)
+                self.obj1.applyTorque(torque_1)
+                self.obj2.applyTorque(torque_2)
 
-                # compute total torques
-                torque_1 = self.damp_torque_fact * lever_1_vect.cross(-force)
-                torque_2 = self.damp_torque_fact * lever_2_vect.cross(force)
+            # DEBUG data
+            self.draw_muscle()
+            self.n_iter += 1
 
-                # apply impusle on an object point only in traction
-                f_type = "Push"
-                if float((force * self.l.normalized())) < 0.0:
-                    f_type = "Pull"
-                    self.obj1.applyForce(- force)
-                    self.obj2.applyForce(force)
-                    self.obj1.applyTorque(torque_1)
-                    self.obj2.applyTorque(torque_2)
-			
-                # DEBUG data
-                self.draw_muscle()
-                self.n_iter += 1
-
-                if self.debug:
-                    print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " +  str(force) + " norm = " \
-                        + str(force * self.l.normalized()) + "N")
-                    print("\t\t\tType = " +  f_type)
-                    print("\t\t\tFs = " +  str(force_s))
-                    print("\t\t\tFd = " + str(force_d))
-                    print("\t\t\tl = " + str(self.l) + " ; l0 = " +  str(self.l0))
-                    print("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " +  str(self.app_point_2))
-                    print("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " +  str(self.app_point_2_world))
-                    print("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
-                    print("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
-                    print("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
-                else:
-                    if self.debug:
-                        print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
-
-
-class Muscle(DampedSpringReducedTorqueMuscle):
-    def __init__(self, scene_, params_):
-        """Class initialization"""
-        DampedSpringReducedTorqueMuscle.__init__(self, scene_, params_)
-
-class Muscle(DampedSpringMuscle):
-    def __init__(self, scene_, params_):
-        """Class initialization"""
-        DampedSpringMuscle.__init__(self, scene_, params_)
+            if self.debug:
+                print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
+                    force) + " norm = " \
+                      + str(force * self.l.normalized()) + "N")
+                print("\t\t\tType = " + f_type)
+                print("\t\t\tFs = " + str(force_s))
+                print("\t\t\tFd = " + str(force_d))
+                print("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
+                print("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
+                print("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
+                print("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
+                print("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
+                print("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
+        elif self.debug:
+            print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")

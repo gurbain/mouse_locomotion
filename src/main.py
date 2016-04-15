@@ -37,16 +37,15 @@ owner["cheesy"].update()
 # DEBUG control and display
 owner["n_iter"] += 1
 if owner["config"].debug:
-    print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " + \
-        str(eval(owner["config"].exit_condition)))
-    print("[DEBUG] Interruption: exit = " + str(eval(owner["config"].exit_condition)) + \
-        " sim time = " + str(time.time() - owner["t_init"]) + " timeout = " + str(owner["config"].timeout))
-
+    print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " +
+          str(eval(owner["config"].exit_condition)))
+    print("[DEBUG] Interruption: exit = " + str(eval(owner["config"].exit_condition)) +
+          " sim time = " + str(time.time() - owner["t_init"]) + " timeout = " + str(owner["config"].timeout))
 
 # Simulation interruption
 if eval(owner["config"].exit_condition) \
-    or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:# \
-    #or time.time() - owner["t_init"] > owner["config"].timeout:
+        or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:  # \
+    # or time.time() - owner["t_init"] > owner["config"].timeout:
     # save config
     save()
 
