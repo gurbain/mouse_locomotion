@@ -12,7 +12,7 @@
 ##
 
 from brain import Brain
-from muscle import DampedSpringReducedTorqueMuscle
+from muscle import *
 
 
 class Leg:
@@ -25,6 +25,7 @@ class Leg:
         self.scene = scene_
         self.config = config_
         self.debug = self.config.debug
+        self.muscle_type = self.config.muscle_type + "(self.scene, muscle_config)"
 
     def update(self, ctrl_sig_):
         """Update control signals and forces"""
@@ -48,11 +49,11 @@ class Backleg(Leg):
         self.brain_sig = []
         if self.orien == "L":
             for muscle_config in self.config.back_leg_L_muscles:
-                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
+                self.muscles.append(eval(self.muscle_type))
                 self.brain_sig.append(muscle_config["brain_sig"])
         else:  # R
             for muscle_config in self.config.back_leg_R_muscles:
-                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
+                self.muscles.append(eval(self.muscle_type))
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
@@ -85,11 +86,11 @@ class Foreleg(Leg):
         self.brain_sig = []
         if self.orien == "L":
             for muscle_config in self.config.front_leg_L_muscles:
-                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
+                self.muscles.append(eval(self.muscle_type))
                 self.brain_sig.append(muscle_config["brain_sig"])
         else:  # R
             for muscle_config in self.config.front_leg_R_muscles:
-                self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
+                self.muscles.append(eval(self.muscle_type))
                 self.brain_sig.append(muscle_config["brain_sig"])
 
     def update(self, ctrl_sig_):
@@ -132,7 +133,7 @@ class Body:
         # Create the muscles objects following config
         self.muscles = []
         for muscle_config in self.config.body["muscles"]:
-            self.muscles.append(DampedSpringReducedTorqueMuscle(self.scene, muscle_config))
+            self.muscles.append(eval(self.muscle_type))
 
     def update(self):
         """Update control signals and forces"""

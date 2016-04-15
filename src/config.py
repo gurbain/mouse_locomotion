@@ -27,6 +27,7 @@ class Config:
         self.save_path = "default"
 
         # Physical parameters
+        self.muscle_type = "DampedSpringReducedTorqueMuscle"
         self.back_leg_L_muscles = []
         self.back_leg_R_muscles = []
         self.front_leg_L_muscles = []
