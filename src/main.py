@@ -11,19 +11,18 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
-import pickle
 import time
 
 import bge
 
 # Get BGE handles
 controller = bge.logic.getCurrentController()
-owner = controller.owner
 exit_actuator = bge.logic.getCurrentController().actuators['quit_game']
 keyboard = bge.logic.keyboard
 
 
 def save():
+    global pickle
     """Save te simulation results"""
 
     f = open(owner["config"].save_path, 'wb')
@@ -44,8 +43,8 @@ if owner["config"].debug:
 
 # Simulation interruption
 if eval(owner["config"].exit_condition) \
-        or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY]:  # \
-    # or time.time() - owner["t_init"] > owner["config"].timeout:
+        or bge.logic.KX_INPUT_ACTIVE == keyboard.events[bge.events.SPACEKEY] \
+        or time.time() - owner["t_init"] > owner["config"].timeout:
     # save config
     save()
 
