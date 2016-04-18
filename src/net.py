@@ -22,13 +22,12 @@ import time
 from threading import Thread, Lock
 
 import rpyc
+import sim
 from rpyc.lib import setup_logger
 from rpyc.utils.factory import DiscoveryError
 from rpyc.utils.registry import REGISTRY_PORT, DEFAULT_PRUNING_TIMEOUT
 from rpyc.utils.registry import UDPRegistryServer
 from rpyc.utils.server import ThreadedServer
-
-import sim
 
 
 class SimManager(Thread):
@@ -155,26 +154,28 @@ class SimManager(Thread):
 
         # We add the rsp from the simulation to the rsp list
         self.mutex_rsp.acquire()
-        self.rsp.appendleft(rsp.value)
+        if not rsp.error:
+            self.rsp.appendleft(rsp.value)
+        else:
+            logging.error('SimManager.response_sim() : The server return an exception\n')
         self.mutex_rsp.release()
 
         self.mutex_conn_list.acquire()
         conn_found = False
         for item in self.conn_list:
             if rsp._conn.__hash__() == item["conn"].__hash__():
-
                 conn_found = True
                 server_hash = item["server"]
 
                 # Decrease thread number in cloud_state dict
                 if server_hash in self.cloud_state:
-                    logging.info("Response received from server " + str(self.cloud_state[server_hash]["address"]) +
-                                 ":" + str(self.cloud_state[server_hash]["port"]) + " with " +
-                                 str(self.cloud_state[server_hash]["n_threads"]) + " threads: " + str(rsp.value))
+                    if not rsp.error:
+                        logging.info("Response received from server " + str(self.cloud_state[server_hash]["address"]) +
+                                     ":" + str(self.cloud_state[server_hash]["port"]) + " with " +
+                                     str(self.cloud_state[server_hash]["n_threads"]) + " threads: " + str(rsp.value))
                     self.mutex_cloud_state.acquire()
                     self.cloud_state[server_hash]["n_threads"] -= 1
                     self.mutex_cloud_state.release()
-
                 else:
                     logging.error("Server " + str(self.cloud_state[server_hash]["address"]) +
                                   ":" + str(self.cloud_state[server_hash]["address"]) +
@@ -187,10 +188,8 @@ class SimManager(Thread):
                 item["conn"].close()
                 t = item["thread"]
                 self.conn_list.remove(item)
-                self.mutex_conn_list.release()
                 t.stop()
-                break
-
+        self.mutex_conn_list.release()
         # If no candidate in the list
         if not conn_found:
             logging.error("Connection " + str(rsp._conn.__hash__()) +
@@ -419,7 +418,7 @@ def start_service():
         t.start()
     except KeyboardInterrupt:
         t.stop()
-        print "Ctrl-c pressed ..."
+        print("Ctrl-c pressed ...")
         sys.exit(1)
 
 

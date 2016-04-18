@@ -25,10 +25,9 @@ import subprocess
 import sys
 import time
 
+import net
 from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.server import ThreadedServer
-
-import net
 
 
 class Simulation:
@@ -41,7 +40,7 @@ class Simulation:
 
     DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend",
                "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
-               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
+               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": True}
 
     def __init__(self, opt_=DEF_OPT):
         """Initialize with CLI options"""
@@ -109,7 +108,7 @@ class Simulation:
         sys.stdout.write("Resultats: ")
         for i in res_list:
             sys.stdout.write(str(i) + " ")
-        print ("\n[INFO] Simulation Finished!")
+        print("\n[INFO] Simulation Finished!")
 
     def brain_opti_sim(self):
         """Run an iterative simulation to optimize the muscles parameters"""
@@ -143,7 +142,7 @@ class Simulation:
         sys.stdout.write("Resultats: ")
         for i in res_list:
             sys.stdout.write(str(i) + " ")
-        print ("[INFO] Simulation Finished!")
+        print("[INFO] Simulation Finished!")
 
     def muscle_opti_sim(self):
         """Run an iterative simulation to optimize the muscles parameters"""
@@ -161,7 +160,7 @@ class BlenderSim:
         """Initialize with  options"""
 
         self.opt = opt_
-        dirname = self.opt["root_dir"] + "/save/"
+        dirname = self.opt["root_dir"] + "/save"
         filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -228,8 +227,11 @@ class BlenderSim:
         """This function reads the file saved in Blender at the end of the simulation to retrieve results"""
 
         # Retrieve filename
-        f = open(self.opt["save_path"], 'rb')
-        results = pickle.load(f)
-        f.close()
-
+        if os.path.isfile(self.opt["save_path"]):
+            f = open(self.opt["save_path"], 'rb')
+            results = pickle.load(f)
+            f.close()
+        else:
+            results = "ERROR BlenderSim.get_results() : Can't open the file " + self.opt[
+                "save_path"] + ".\nThe file doesn't exist."
         return results
