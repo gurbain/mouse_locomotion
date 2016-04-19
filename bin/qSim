@@ -25,7 +25,7 @@ sys.path.append(src)
 
 from plumbum import cli
 
-from sim import Simulation
+from sim import Simulation, BlenderSim
 
 
 class SimCli(cli.Application):
@@ -34,7 +34,8 @@ class SimCli(cli.Application):
     # Default CLI application options
     DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend", "root_dir": root,
                "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
-               "logfile": os.getenv("HOME") + "/.log/qSim.log", "fullscreen": False, "save": False}
+               "local" : False, "logfile": os.getenv("HOME") + "/.log/qSim.log", "fullscreen": False, 
+               "save": False}
     opt = dict()
 
     # Simulation parameters
@@ -52,6 +53,8 @@ class SimCli(cli.Application):
                         help="Start registry server; no simulation will be run")
     service = cli.Flag(["-s"], default=DEF_OPT["service"],
                         help="Start services server; no simulation will be run")
+    local = cli.Flag(["-l"], default=DEF_OPT["local"],
+                        help="Start a single local simulation. Used to bypass simulation distributed architecture")
 
     # Display modes
     root = cli.Flag(["--root"], default=DEF_OPT["root_dir"],
@@ -73,6 +76,7 @@ class SimCli(cli.Application):
         self.opt["sim_type"] = self.sim_type
         self.opt["registry"] = self.registry
         self.opt["service"] = self.service
+        self.opt["local"] = self.local
         self.opt["verbose"] = self.verbose
         self.opt["logfile"] = self.logfile
         self.opt["fullscreen"] = self.fullscreen
@@ -87,21 +91,28 @@ class SimCli(cli.Application):
                 defaults={'logfilename': self.opt["logfile"], \
                 'simLevel' : "INFO" })
 
-        # Start servers if called
-        s = Simulation(self.opt)
-        if self.opt["registry"]:
-            s.start_registry()
-        elif self.opt["service"]:
-            s.start_service()
+        # Start a local simulation
+        if self.opt["local"]:
+            bs = BlenderSim(self.opt)
+            bs.start_blenderplayer()
 
-        # Else, start chosen simulation
         else:
-            if self.opt["sim_type"] == "brain_opti":
-                s.brain_opti_sim()
-            elif self.opt["sim_type"] == "muscle_opti":
-                s.brain_opti_sim()
+            s = Simulation(self.opt)
+
+            # Start servers if called
+            if self.opt["registry"]:
+                s.start_registry()
+            elif self.opt["service"]:
+                s.start_service()
+
+            # Else, start chosen simulation
             else:
-                s.run_sim()
+                if self.opt["sim_type"] == "brain_opti":
+                    s.brain_opti_sim()
+                elif self.opt["sim_type"] == "muscle_opti":
+                    s.brain_opti_sim()
+                else:
+                    s.run_sim()
 
 
 if __name__ == "__main__":
