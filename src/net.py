@@ -387,7 +387,7 @@ def start_manager():
 
     # Create and start SimManager thread
     t_i = time.time()
-    print("#### Starting Sim Manager Test Program with PID " + str(os.getpid()) + " ####")
+    logging.info("#### Starting Sim Manager Test Program with PID " + str(os.getpid()) + " ####")
     sm = SimManager()
     sm.daemon = True
     sm.start()
@@ -401,15 +401,15 @@ def start_manager():
         sim_list.append(opt)
     res_list = sm.simulate(sim_list)
 
-    sys.stdout.write("Resultats: ")
+    rs_ls = ""
     for i in res_list:
-        sys.stdout.write(str(i) + " ")
-    print("")
+        rs_ls += str(i) + " "
+    logging.info("Results: " + str(rs_ls))
 
     # Wait to terminate all work and stop SimManager thread
     sm.stop()
     time.sleep(1)
-    print("#### Exiting Sim Manager Test Program - Sim time: " + str(float("{0:.2f}".format(time.time() - t_i))) +
+    logging.info("#### Exiting Sim Manager Test Program - Sim time: " + str(float("{0:.2f}".format(time.time() - t_i))) +
           " sec for " + str(N_SIM) + " simulations ####")
 
 
@@ -419,7 +419,7 @@ def start_service():
         t.start()
     except KeyboardInterrupt:
         t.stop()
-        print "Ctrl-c pressed ..."
+        logging.warning("SINGINT caught form user keyboard interrupt")
         sys.exit(1)
 
 

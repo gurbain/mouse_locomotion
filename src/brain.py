@@ -11,6 +11,7 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import logging
 import numpy as np
 
 
@@ -59,9 +60,9 @@ class Brain:
         self.n_iter = 0
         self.scene = scene_
         self.config = config_
+        self.logger = config_.logger
         self.name = self.config.brain["name"]
         self.n_osc = self.config.brain["n_osc"]
-        self.debug = self.config.debug
         self.osc = Matsuoka(self.scene, self.config)
         self.state = np.zeros((self.n_osc, 1))
 
@@ -73,6 +74,5 @@ class Brain:
         self.state = self.osc.y
 
         self.n_iter += 1
-        if self.debug:
-            print("[DEBUG] Brain " + self.name + " iteration " + str(self.n_iter) + ": State vector: " +
-                  str(np.transpose(self.state)))
+        self.logger.debug("Brain " + self.name + " iteration " + str(self.n_iter) + ": State vector: " +
+            str(np.transpose(self.state)))

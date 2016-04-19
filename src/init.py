@@ -12,6 +12,8 @@
 ##
 
 # Add src folder to path
+import logging
+import logging.config
 import os
 import sys
 import bge
@@ -25,21 +27,21 @@ sys.path.append(src)
 from body import *
 from config import *
 
-# Default config when started directly from Blender
+# Blender start
 CONFIG_NAME = "MouseDefConfig()"
-DEBUG_MODE = "INFO"
+LOG_NAME = os.getenv("HOME") + "/.log/qSim.log"
 dirname = root + "/save"
 filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
 if not os.path.exists(dirname):
     os.makedirs(dirname)
 SAVE_NAME = dirname + "/" + filename
 
-print("\n\n####################################")
-print("##   Mouse Locomotion Simulation   #")
-print("##   ---------------------------   #")
-print("##                                 #")
-print("##   Gabriel Urbain - UGent 2016   #")
-print("####################################\n")
+# Command-line start
+if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
+    CONFIG_NAME = sys.argv[len(sys.argv) - 5]
+    LOG_NAME = sys.argv[len(sys.argv) - 4]
+    LOG_NAME = sys.argv[len(sys.argv) - 3]
+    SAVE_OPTION = sys.argv[len(sys.argv) - 2]
 
 # Get BGE handles
 controller = bge.logic.getCurrentController()
@@ -47,18 +49,24 @@ scene = bge.logic.getCurrentScene()
 keyboard = bge.logic.keyboard
 owner = controller.owner
 
-# Catch command-line config when started from start.py script
-if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
-    CONFIG_NAME = sys.argv[len(sys.argv) - 4]
-    DEBUG_MODE = sys.argv[len(sys.argv) - 3]
-    SAVE_OPTION = sys.argv[len(sys.argv) - 2]
-
 # Create python controller
 owner["n_iter"] = 0
 owner["t_init"] = time.time()
 owner["config"] = eval(CONFIG_NAME)
-owner["config"].debug = DEBUG_MODE
 owner["config"].save_path = SAVE_NAME
+
+logging.config.fileConfig(root + "/etc/logging.conf", \
+    defaults={'logfilename': LOG_NAME, 'simLevel' : "DEBUG" })
+logger = logging.getLogger(owner["config"].logger_name)
+owner["config"].logger = logger
+
+logger.info("####################################")
+logger.info("##   Mouse Locomotion Simulation   #")
+logger.info("##   ---------------------------   #")
+logger.info("##                                 #")
+logger.info("##   Gabriel Urbain - UGent 2016   #")
+logger.info("####################################\n")
+
 owner["cheesy"] = Body(scene, owner["config"])
 
 # Set simulation parameters

@@ -39,11 +39,7 @@ class Simulation:
     distribute simulation accross the network.
     """
 
-    DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend",
-               "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
-               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
-
-    def __init__(self, opt_=DEF_OPT):
+    def __init__(self, opt_=None):
         """Initialize with CLI options"""
         self.opt = opt_
         self.ipaddr = self.__get_ip_address('eth0')
@@ -106,10 +102,11 @@ class Simulation:
         # Stop and disply results
         self.stop_manager()
         time.sleep(1)
-        sys.stdout.write("Resultats: ")
+        rs_ls = ""
         for i in res_list:
-            sys.stdout.write(str(i) + " ")
-        print ("\n[INFO] Simulation Finished!")
+            rs_ls += str(i) + " "
+        logging.info("Results: " + str(rs_ls))
+        logging.info("Simulation Finished!")
 
     def brain_opti_sim(self):
         """Run an iterative simulation to optimize the muscles parameters"""
@@ -143,12 +140,12 @@ class Simulation:
         sys.stdout.write("Resultats: ")
         for i in res_list:
             sys.stdout.write(str(i) + " ")
-        print ("[INFO] Simulation Finished!")
+        logging.info("Simulation Finished!")
 
     def muscle_opti_sim(self):
         """Run an iterative simulation to optimize the muscles parameters"""
 
-        print("[INFO] This simulation is not implemented yet! Exiting...")
+        logging.error("This simulation is not implemented yet! Exiting...")
 
 
 class BlenderSim:
@@ -186,11 +183,12 @@ class BlenderSim:
             args.extend(["-f"])
         args.extend([self.opt["blender_model"]])
         args.extend(["-", self.opt["config_name"] + "()"])
-        args.extend([str(self.opt["verbose"]), str(self.opt["save_path"])])
+        args.extend([str(self.opt["verbose"]), str(self.opt["logfile"])])
+        args.extend([str(self.opt["save_path"])])
         args.extend(["FROM_START.PY"])
 
         # Start batch process and quit
-        print(args)
+        logging.debug("Subprocess call: " + str(args))
         subprocess.call(args)
 
     def start_blender_with_player(self):
@@ -205,7 +203,7 @@ class BlenderSim:
         args.extend(["--start_player()"])
 
         # Start batch process and quit
-        print(args)
+        logging.debug("Subprocess call: " + str(args))
         subprocess.call(args)
 
     def create_pop(self):
@@ -221,7 +219,7 @@ class BlenderSim:
         args.extend(["--create_pop()"])
 
         # Start batch process and quit
-        print(args)
+        logging.debug("Subprocess call: " + str(args))
         subprocess.call(args)
 
     def get_results(self):

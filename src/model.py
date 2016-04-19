@@ -11,6 +11,7 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import logging
 import os.path
 import sys
 
@@ -43,7 +44,7 @@ def create_population(n_pop_=10):
     splited_filename = os.path.splitext(bpy.data.filepath)
     saved_filename = splited_filename[0] + "_pop" + splited_filename[1]
     bpy.ops.wm.save_as_mainfile(filepath=saved_filename)
-    print("[INFO] Population Model of size " + str(n_pop_) + " created and savec with name: " + saved_filename)
+    logging.info("Population Model of size " + str(n_pop_) + " created and savec with name: " + saved_filename)
 
 
 def start_player():

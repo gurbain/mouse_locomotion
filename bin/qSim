@@ -14,15 +14,14 @@
 ##
 
 # Add src folder to path
+import logging.config
+import os
 from os.path import dirname, realpath
 import sys
 
 root = dirname(dirname(realpath(__file__)))
 src = root + "/src"
 sys.path.append(src)
-
-import logging
-
 
 from plumbum import cli
 
@@ -35,34 +34,34 @@ class SimCli(cli.Application):
     # Default CLI application options
     DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot.blend", "root_dir": root,
                "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
-               "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
+               "logfile": os.getenv("HOME") + "/.log/qSim.log", "fullscreen": False, "save": False}
     opt = dict()
 
     # Simulation parameters
     path = cli.SwitchAttr(["-p", "--binpath"], str, default=DEF_OPT["blender_path"],
-                          help="Path of Blender binaries")
+                        help="Path of Blender binaries")
     model = cli.SwitchAttr(["-m", "--model"], str, default=DEF_OPT["blender_model"],
-                           help="Model to simulation")
+                        help="Model to simulation")
     config = cli.SwitchAttr(["-c", "--config"], str, default=DEF_OPT["config_name"],
-                            help="The config class to be used for simulation")
+                        help="The config class to be used for simulation")
     sim_type = cli.SwitchAttr(["-t", "--type"], str, default=DEF_OPT["sim_type"],
-                              help="Specify the type of simulation: RUN, BRAIN or MUSCLE")
+                        help="Specify the type of simulation: RUN, BRAIN or MUSCLE")
 
     # Server modes
     registry = cli.Flag(["-r"], default=DEF_OPT["registry"],
                         help="Start registry server; no simulation will be run")
     service = cli.Flag(["-s"], default=DEF_OPT["service"],
-                       help="Start services server; no simulation will be run")
+                        help="Start services server; no simulation will be run")
 
     # Display modes
     root = cli.Flag(["--root"], default=DEF_OPT["root_dir"],
                     help="Force the root directory of the mouse locomotion software")
-    verbose = cli.SwitchAttr(["-v", "--verbosemode"], str, default=DEF_OPT["verbose"],
-                             help="Set verbose mode to ERROR, WARNING, INFO or DEBUG")
+    verbose = cli.Flag(["-v", "--verbosemode"], default=False,
+                    help="Set verbose mode")
     logfile = cli.SwitchAttr(["--logfile"], str, default=DEF_OPT["logfile"],
-                             help="The log file to use")
+                    help="The log file to use")
     fullscreen = cli.Flag(["-f", "--fullscreen"], default=DEF_OPT["fullscreen"],
-                          help="Enable fullscreen mode")
+                    help="Enable fullscreen mode")
 
     def main(self):
 
@@ -78,15 +77,15 @@ class SimCli(cli.Application):
         self.opt["logfile"] = self.logfile
         self.opt["fullscreen"] = self.fullscreen
 
-        # TODO Configure logging
-        logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-                            format="[%(levelname)s - %(asctime)s - %(filename)s:%(lineno)d] %(message)s")
-        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
-                            format="[%(levelname)s - %(asctime)s - %(threadName)s:%(funcName)s - %(filename)s:%(lineno)d] %(message)s")
-        logging.basicConfig(stream=sys.stdout, level=logging.WARNING, format="[%(levelname)s - \
-            %(filename)s:%(lineno)d] %(message)s")
-        logging.basicConfig(stream=sys.stdout, level=logging.ERROR, format="[%(levelname)s - \
-            %(filename)s:%(lineno)d] %(message)s")
+        # Configure logging
+        if self.verbose:
+            logging.config.fileConfig(root + "/etc/logging.conf", \
+                defaults={'logfilename': self.opt["logfile"], \
+                'simLevel' : "DEBUG" })
+        else:
+            logging.config.fileConfig(root + "/etc/logging.conf", \
+                defaults={'logfilename': self.opt["logfile"], \
+                'simLevel' : "INFO" })
 
         # Start servers if called
         s = Simulation(self.opt)

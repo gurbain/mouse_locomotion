@@ -12,6 +12,7 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import logging
 import math
 from mathutils import Vector as vec
 
@@ -25,19 +26,19 @@ class Muscle:
         self.scene = scene_
         self.params = params_
         self.name = self.params["name"]
-        self.debug = self.params["debug"]
         self.active = True
+
+        self.logger = logging.getLogger(params_["logger"])
 
         # Check if onject exist
         if not self.params["obj_1"] in self.scene.objects:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
+            self.logger.error("Muscle " + self.name + " deactivated: first extremity object doesn't exit." +
                   " Check your configuration file!")
             self.active = False
         else:
             self.obj1 = self.scene.objects[self.params["obj_1"]]
         if not self.params["obj_2"] in self.scene.objects:
-            print(
-                "\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
+            self.logger.error("Muscle " + self.name + " deactivated: second extremity object doesn't exit." +
                 " Check your configuration file!")
             self.active = False
         else:
@@ -45,11 +46,11 @@ class Muscle:
 
         # Points of application in local coordinates
         if self.params["anch_1"] is None:
-            print("\033[93m[DANGER]\033[0m You have not defined the first application point of muscle " + self.name +
+            self.logger.error("You have not defined the first application point of muscle " + self.name +
                   "! Center is taken by default. This may results in erroneous simulation")
             self.params["anch_1"] = [0.0, 0.0, 0.0]
         if self.params["anch_2"] is None:
-            print("\033[93m[DANGER]\033[0m You have not defined the second application point of muscle " + self.name +
+            self.logger.error("You have not defined the second application point of muscle " + self.name +
                   "! Center is taken by default. This may results in erroneous simulation")
             self.params["anch_2"] = [0.0, 0.0, 0.0]
         self.app_point_1 = vec((self.params["anch_1"]))
@@ -124,7 +125,7 @@ class HillMuscle(Muscle):
         if hasattr(kwargs, "l_CE"):
             l_CE = kwargs["l_CE"]
         else:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: l_CE isn't defined." +
+            self.logger.error("Muscle " + self.name + " deactivated: l_CE isn't defined." +
                   " Check your configuration file!")
             self.active = False
             l_CE = 0
@@ -132,7 +133,7 @@ class HillMuscle(Muscle):
         if hasattr(kwargs, "l_MTC"):
             l_MTC = kwargs["l_MTC"]
         else:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: l_MTC isn't defined." +
+            self.logger.error("Muscle " + self.name + " deactivated: l_MTC isn't defined." +
                   " Check your configuration file!")
             self.active = False
             l_MTC = 0
@@ -140,7 +141,7 @@ class HillMuscle(Muscle):
         if hasattr(kwargs, "dot_l_MTC"):
             dot_l_MTC = kwargs["dot_l_MTC"]
         else:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: dot_l_MTC isn't defined." +
+            self.logger.error("Muscle " + self.name + " deactivated: dot_l_MTC isn't defined." +
                   " Check your configuration file!")
             self.active = False
             dot_l_MTC = 0
@@ -148,7 +149,7 @@ class HillMuscle(Muscle):
         if hasattr(kwargs, "q"):
             q = kwargs["q"]
         else:
-            print("\033[91m[CRITIC]\033[0m Muscle " + self.name + " deactivated: q isn't defined." +
+            self.logger.error("Muscle " + self.name + " deactivated: q isn't defined." +
                   " Check your configuration file!")
             self.active = False
             q = 0
@@ -300,19 +301,18 @@ class DampedSpringMuscle(Muscle):
             self.draw_muscle()
             self.n_iter += 1
 
-            if self.debug:
-                print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
-                    force) + " norm = " + str(force * self.l.normalized()) + "N")
-                print("\t\t\tType = " + f_type)
-                print("\t\t\tFs = " + str(force_s))
-                print("\t\t\tFd = " + str(force_d))
-                print("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
-                print(
-                    "\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" + str(
-                        self.app_point_2_world))
-                print("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" + str(self.app_point_2))
-        elif self.debug:
-            print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
+            self.logger.debug("Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
+                force) + " norm = " + str(force * self.l.normalized()) + "N")
+            self.logger.debug("\t\t\tType = " + f_type)
+            self.logger.debug("\t\t\tFs = " + str(force_s))
+            self.logger.debug("\t\t\tFd = " + str(force_d))
+            self.logger.debug("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
+            self.logger.debug(
+                "\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" + str(
+                self.app_point_2_world))
+            self.logger.debug("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" + str(self.app_point_2))
+        else:
+            self.logger.warning("Muscle " + self.name + " has been deactivated.")
 
 
 class DampedSpringReducedTorqueMuscle(Muscle):
@@ -409,18 +409,16 @@ class DampedSpringReducedTorqueMuscle(Muscle):
             self.draw_muscle()
             self.n_iter += 1
 
-            if self.debug:
-                print("[DEBUG] Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
-                    force) + " norm = " \
-                      + str(force * self.l.normalized()) + "N")
-                print("\t\t\tType = " + f_type)
-                print("\t\t\tFs = " + str(force_s))
-                print("\t\t\tFd = " + str(force_d))
-                print("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
-                print("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
-                print("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
-                print("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
-                print("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
-                print("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
-        elif self.debug:
-            print("\033[93m[DANGER]\033[0m Muscle " + self.name + " has been deactivated.")
+            self.logger.debug("Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
+                force) + " norm = " + str(force * self.l.normalized()) + "N")
+            self.logger.debug("\t\t\tType = " + f_type)
+            self.logger.debug("\t\t\tFs = " + str(force_s))
+            self.logger.debug("\t\t\tFd = " + str(force_d))
+            self.logger.debug("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
+            self.logger.debug("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
+            self.logger.debug("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
+            self.logger.debug("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
+            self.logger.debug("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
+            self.logger.debug("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
+        else:
+            self.logger.warning("Muscle " + self.name + " has been deactivated.")

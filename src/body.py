@@ -11,6 +11,8 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import logging
+
 from brain import Brain
 from muscle import *
 
@@ -24,15 +26,14 @@ class Leg:
         self.n_iter = 0
         self.scene = scene_
         self.config = config_
-        self.debug = self.config.debug
+        self.logger = config_.logger
         self.muscle_type = self.config.muscle_type + "(self.scene, muscle_config)"
 
     def update(self, ctrl_sig_):
         """Update control signals and forces"""
 
         self.n_iter += 1
-        if self.debug:
-            print("[DEBUG] Leg iteration: " + str(self.n_iter))
+        self.logger.debug("Leg iteration: " + str(self.n_iter))
 
 
 class Backleg(Leg):
@@ -67,9 +68,8 @@ class Backleg(Leg):
             self.muscles[i].update(ctrl_sig=ctrl_sig)
 
         self.n_iter += 1
-        if self.debug:
-            print("[DEBUG] Backleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
-                  str(self.brain_sig))
+        self.logger.debug("Backleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
+            str(self.brain_sig))
 
 
 class Foreleg(Leg):
@@ -104,9 +104,8 @@ class Foreleg(Leg):
             self.muscles[i].update(ctrl_sig=ctrl_sig)
 
         self.n_iter += 1
-        if self.debug:
-            print("[DEBUG] Foreleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
-                  str(self.brain_sig))
+        self.logger.debug("Foreleg " + self.orien + " iteration " + str(self.n_iter) + ": Control signal = " +
+            str(self.brain_sig))
 
 
 class Body:
@@ -118,8 +117,8 @@ class Body:
         self.n_iter = 0
         self.scene = scene_
         self.config = config_
+        self.logger = config_.logger
         self.name = self.config.body["name"]
-        self.debug = self.config.debug
 
         # Create 4 legs
         self.l_fo_leg = Foreleg(scene_, config_, "L")
@@ -155,5 +154,4 @@ class Body:
         self.r_fo_leg.update(ctrl_sig)
 
         self.n_iter += 1
-        if self.debug:
-            print("[DEBUG] Body " + self.name + " iteration " + str(self.n_iter))
+        self.logger.debug("Body " + self.name + " iteration " + str(self.n_iter))
