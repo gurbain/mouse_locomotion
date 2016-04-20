@@ -11,6 +11,8 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 import datetime
+import logging
+import logging.config
 import os
 import sys
 import time
@@ -24,12 +26,6 @@ sys.path.append(src)
 from body import *
 from config import *
 
-print("\n\n####################################")
-print("##   Mouse Locomotion Simulation   #")
-print("##   ---------------------------   #")
-print("##                                 #")
-print("##   Gabriel Urbain - UGent 2016   #")
-print("####################################\n")
 
 # Get BGE handles
 scene = bge.logic.getCurrentScene()
@@ -39,12 +35,12 @@ if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
     argv = sys.argv
     argv = eval(argv[argv.index("-") + 1])
     CONFIG_NAME = argv["config_name"]
-    DEBUG_MODE = argv["verbose"]
+    LOG_FILE = argv["logfile"]
     SAVE_NAME = argv["filename"]
 else:
     # Default config when started directly from Blender
     CONFIG_NAME = "MouseDefConfig()"
-    DEBUG_MODE = "INFO"
+    LOG_FILE = os.getenv("HOME") + "/.log/qSim.log"
     dirname = root + "/save"
     filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
     if not os.path.exists(dirname):
@@ -55,12 +51,25 @@ else:
 global owner
 owner = {"n_iter": 0, "t_init": time.time()}
 
+# Create Logger and configuration
+logging.config.fileConfig(root + "/etc/logging.conf", \
+    defaults={'logfilename': LOG_FILE, 'simLevel' : "DEBUG" })
+logger = logging.getLogger(owner["config"].logger_name)
+
 configuration = eval(CONFIG_NAME)
-configuration.debug = DEBUG_MODE
+configuration.logger = logger
 configuration.save_path = SAVE_NAME
 
 owner["config"] = configuration
 owner["cheesy"] = Body(scene, configuration)
+
+# Advertise simulation has begun
+logger.info("####################################")
+logger.info("##   Mouse Locomotion Simulation   #")
+logger.info("##   ---------------------------   #")
+logger.info("##                                 #")
+logger.info("##   Gabriel Urbain - UGent 2016   #")
+logger.info("####################################\n")
 
 # Set simulation parameters
 bge.logic.setTimeScale(configuration.sim_speed)

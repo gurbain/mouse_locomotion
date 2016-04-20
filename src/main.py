@@ -11,6 +11,7 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 
+import logging
 import time
 import pickle
 import bge
@@ -35,10 +36,9 @@ owner["cheesy"].update()
 
 # DEBUG control and display
 owner["n_iter"] += 1
-if owner["config"].debug:
-    print("[DEBUG] Main iteration " + str(owner["n_iter"]) + ": stop state = " +
+owner["config"].logger.debug("Main iteration " + str(owner["n_iter"]) + ": stop state = " +
           str(eval(owner["config"].exit_condition)))
-    print("[DEBUG] Interruption: exit = " + str(eval(owner["config"].exit_condition)) +
+owner["config"].logger.debug("[Interruption: exit = " + str(eval(owner["config"].exit_condition)) +
           " sim time = " + str(time.time() - owner["t_init"]) + " timeout = " + str(owner["config"].timeout))
 
 # Simulation interruption
