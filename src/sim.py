@@ -12,8 +12,6 @@
 # Copyright Gabriel Urbain <gabriel.urbain@ugent.be>. March 2016
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
-
-
 import datetime
 import fcntl
 import logging
@@ -160,11 +158,9 @@ class BlenderSim:
         """Initialize with  options"""
 
         self.opt = opt_
-        dirname = self.opt["root_dir"] + "/save"
-        filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-        self.opt["save_path"] = dirname + "/" + filename
+        self.dirname = self.opt["root_dir"] + "/save"
+        if not os.path.exists(self.dirname):
+            os.makedirs(self.dirname)
 
     def start_blenderplayer(self):
         """Call blenderplayer via command line subprocess"""
@@ -181,11 +177,19 @@ class BlenderSim:
             "-g", "ignore_deprecation_warnings", "=", "0",
             "-d",
         ])
+
+        filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
+        self.opt["save_path"] = self.dirname + "/" + filename
+
         if self.opt["fullscreen"]:
             args.extend(["-f"])
         args.extend([self.opt["blender_model"]])
-        args.extend(["-", self.opt["config_name"] + "()"])
-        args.extend([str(self.opt["verbose"]), str(self.opt["save_path"])])
+        args.extend(["-"])
+        params = {'config_name': self.opt["config_name"] + "()",
+                  'verbose': str(self.opt["verbose"]),
+                  'filename': str(self.opt["save_path"])}
+
+        args.extend([str(params)])
         args.extend(["FROM_START.PY"])
 
         # Start batch process and quit
@@ -227,7 +231,9 @@ class BlenderSim:
         """This function reads the file saved in Blender at the end of the simulation to retrieve results"""
 
         # Retrieve filename
-        if os.path.isfile(self.opt["save_path"]):
+        if not "save_path" in self.opt:
+            results = "WARNING BlenderSim.get_results() : Nothing to show"
+        elif os.path.isfile(self.opt["save_path"]):
             f = open(self.opt["save_path"], 'rb')
             results = pickle.load(f)
             f.close()

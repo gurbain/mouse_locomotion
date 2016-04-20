@@ -4,7 +4,7 @@
 BIN_DIR="bin"
 BLENDER_REMOTE_REP="http://download.blender.org/release/"
 BLENDER_VERS="Blender2.77"
-BLENDER_FILE="blender-2.77-rc2-linux-glibc211-x86_64"
+BLENDER_FILE="blender-2.77-linux-glibc211-x86_64"
 
 # Check
 echo "[INSTALL BLENDER] Check directory"

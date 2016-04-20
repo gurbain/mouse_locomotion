@@ -24,15 +24,6 @@ sys.path.append(src)
 from body import *
 from config import *
 
-# Default config when started directly from Blender
-CONFIG_NAME = "MouseDefConfig()"
-DEBUG_MODE = "INFO"
-dirname = root + "/save"
-filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
-if not os.path.exists(dirname):
-    os.makedirs(dirname)
-SAVE_NAME = dirname + "/" + filename
-
 print("\n\n####################################")
 print("##   Mouse Locomotion Simulation   #")
 print("##   ---------------------------   #")
@@ -42,22 +33,34 @@ print("####################################\n")
 
 # Get BGE handles
 scene = bge.logic.getCurrentScene()
-global owner
-owner = {}
 
-# Catch command-line config when started from start.py script
 if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
-    CONFIG_NAME = sys.argv[len(sys.argv) - 4]
-    DEBUG_MODE = sys.argv[len(sys.argv) - 3]
-    SAVE_OPTION = sys.argv[len(sys.argv) - 2]
+    # Catch command-line config when started from another script
+    argv = sys.argv
+    argv = eval(argv[argv.index("-") + 1])
+    CONFIG_NAME = argv["config_name"]
+    DEBUG_MODE = argv["verbose"]
+    SAVE_NAME = argv["filename"]
+else:
+    # Default config when started directly from Blender
+    CONFIG_NAME = "MouseDefConfig()"
+    DEBUG_MODE = "INFO"
+    dirname = root + "/save"
+    filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    SAVE_NAME = dirname + "/" + filename
 
 # Create python controller
-owner["n_iter"] = 0
-owner["t_init"] = time.time()
-owner["config"] = eval(CONFIG_NAME)
-owner["config"].debug = DEBUG_MODE
-owner["config"].save_path = SAVE_NAME
-owner["cheesy"] = Body(scene, owner["config"])
+global owner
+owner = {"n_iter": 0, "t_init": time.time()}
+
+configuration = eval(CONFIG_NAME)
+configuration.debug = DEBUG_MODE
+configuration.save_path = SAVE_NAME
+
+owner["config"] = configuration
+owner["cheesy"] = Body(scene, configuration)
 
 # Set simulation parameters
-bge.logic.setTimeScale(owner["config"].sim_speed)
+bge.logic.setTimeScale(configuration.sim_speed)
