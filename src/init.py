@@ -38,7 +38,7 @@ if sys.argv[len(sys.argv) - 1] == "FROM_START.PY":
     SAVE_NAME = argv["filename"]
 else:
     # Default config when started directly from Blender
-    CONFIG_NAME = "MouseDefConfig()"
+    CONFIG_NAME = "DogVertDefConfig()"
     LOG_FILE = os.getenv("HOME") + "/.log/qSim.log"
     dirname = root + "/save"
     filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"

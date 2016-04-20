@@ -67,15 +67,17 @@ class Config:
         return liste
 
 
-class RobotDefConfig(Config):
-    """Default configuration file for robot.blend"""
+class DogDefConfig(Config):
+    """Default configuration file for dog.blend"""
 
     def __init__(self):
-        Config.__init__(self)
-        "Init Robot Default Config parameters"
+        """Init Dog Default Config parameters"""
 
         # Simulation parameters
-        self.name = "default_robot_simulation_config"
+
+        Config.__init__(self)
+        self.muscle_type = "DampedSpringMuscle"
+        self.name = "default_dog_simulation_config"
         self.sim_speed = 1.0
         self.exit_condition = "bge.logic.getCurrentScene().objects['obj_body'].worldPosition.z < -1.8"
 
@@ -124,7 +126,7 @@ class RobotDefConfig(Config):
         self.front_leg_R_muscles = [FR_biceps, FR_triceps, FR_gastro]
 
         # Brain
-        self.brain = {"name": "default_robot_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
+        self.brain = {"name": "default_dog_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
                       "T": 5e-2, "a": 10.5, "b": 20.5, "c": 0.08, "aa": 3, "time_interval": 1e-3}
 
         # Body
@@ -159,16 +161,16 @@ class RobotDefConfig(Config):
         return liste
 
 
-class RobotVertDefConfig(Config):
-    """Default configuration file for robot_vert.blend"""
+class DogVertDefConfig(Config):
+    """Default configuration file for dog_vert.blend"""
 
     def __init__(self):
-        """Init Robot Default Config parameters"""
+        """Init Dog Default Config parameters"""
 
         # Simulation parameters
         Config.__init__(self)
         self.muscle_type = "DampedSpringMuscle"
-        self.name = "default_robot_vert_simulation_config"
+        self.name = "default_dog_vert_simulation_config"
         self.sim_speed = 1.0
         self.exit_condition = "owner['n_iter'] > 2500"  # "bge.logic.getCurrentScene().objects['obj_body.B'].worldPosition.z < -1.8"
 
@@ -217,7 +219,7 @@ class RobotVertDefConfig(Config):
         self.front_leg_R_muscles = [FR_biceps, FR_triceps, FR_gastro]
 
         # Brain
-        self.brain = {"name": "default_robot_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
+        self.brain = {"name": "default_dog_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
                       "T": 5e-2, "a": 10.5, "b": 20.5, "c": 0.08, "aa": 3, "time_interval": 1e-3}
 
         # Body
@@ -361,7 +363,7 @@ class MouseDefConfig(Config):
         self.front_leg_R_muscles = []  # FR_biceps, FR_triceps, FR_gastro]
 
         # Brain
-        self.brain = {"name": "default_robot_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
+        self.brain = {"name": "default_dog_matsuoka_brain", "n_osc": 4, "h": 1e-3, "tau": 1e-2,
                       "T": 5e-2, "a": 10.5, "b": 20.5, "c": 0.08, "aa": 3, "time_interval": 1e-3}
 
         # Body

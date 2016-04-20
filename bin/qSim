@@ -32,8 +32,8 @@ class SimCli(cli.Application):
     """This script provide a framework for quadruped locomotion driven by reservoir computing"""
 
     # Default CLI application options
-    DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "robot_vert.blend", "root_dir": root,
-               "config_name": "RobotVertDefConfig", "sim_type": "run", "registry": False, "service": False,
+    DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "dog_vert.blend", "root_dir": root,
+               "config_name": "DogVertDefConfig", "sim_type": "run", "registry": False, "service": False,
                "local" : False, "logfile": os.getenv("HOME") + "/.log/qSim.log", "fullscreen": False, 
                "save": False}
     opt = dict()

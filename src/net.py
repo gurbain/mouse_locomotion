@@ -393,8 +393,8 @@ def start_manager():
 
     # Send simulation list and wait for results
     sim_list = []
-    opt = {"blender_path": "blender-2.77/", "blender_model": "robot.blend",
-           "config_name": "MouseDefConfig", "sim_type": "run", "registry": False, "service": False,
+    opt = {"blender_path": "blender-2.77/", "blender_model": "dog_vert.blend",
+           "config_name": "DogVertDefConfig", "sim_type": "run", "registry": False, "service": False,
            "logfile": "stdout", "fullscreen": False, "verbose": "INFO", "save": False}
     for i in range(N_SIM):
         sim_list.append(opt)
