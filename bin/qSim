@@ -82,13 +82,19 @@ class SimCli(cli.Application):
         self.opt["fullscreen"] = self.fullscreen
 
         # Configure logging
+        log_file = self.opt["logfile"]
+        if not os.path.exists(os.path.dirname(log_file)):
+            os.makedirs(os.path.dirname(log_file))
+        if not os.path.exists(log_file):
+            f = open(log_file, 'w')
+            f.close()
         if self.verbose:
-            logging.config.fileConfig(root + "/etc/logging.conf", \
-                defaults={'logfilename': self.opt["logfile"], \
+            logging.config.fileConfig(root + "/etc/logging.conf",
+                                      defaults={'logfilename': log_file,
                 'simLevel' : "DEBUG" })
         else:
-            logging.config.fileConfig(root + "/etc/logging.conf", \
-                defaults={'logfilename': self.opt["logfile"], \
+            logging.config.fileConfig(root + "/etc/logging.conf",
+                                      defaults={'logfilename': log_file,
                 'simLevel' : "INFO" })
 
         # Start a local simulation

@@ -11,7 +11,6 @@
 # Data Science Lab - Ghent University. Human Brain Project SP10
 ##
 import datetime
-import logging
 import logging.config
 import os
 import sys
@@ -52,8 +51,14 @@ global owner
 owner = {"n_iter": 0, "t_init": time.time()}
 
 # Create Logger and configuration
-logging.config.fileConfig(root + "/etc/logging.conf", \
-    defaults={'logfilename': LOG_FILE, 'simLevel' : "DEBUG" })
+if not os.path.exists(os.path.dirname(LOG_FILE)):
+    os.makedirs(os.path.dirname(LOG_FILE))
+if not os.path.exists(LOG_FILE):
+    f = open(LOG_FILE, 'w')
+    f.close()
+
+logging.config.fileConfig(root + "/etc/logging.conf",
+                          defaults={'logfilename': LOG_FILE, 'simLevel': "DEBUG"})
 logger = logging.getLogger(owner["config"].logger_name)
 
 configuration = eval(CONFIG_NAME)
