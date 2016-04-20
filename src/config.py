@@ -167,6 +167,7 @@ class RobotVertDefConfig(Config):
 
         # Simulation parameters
         Config.__init__(self)
+        self.muscle_type = "DampedSpringMuscle"
         self.name = "default_robot_vert_simulation_config"
         self.sim_speed = 1.0
         self.exit_condition = "owner['n_iter'] > 2500"  # "bge.logic.getCurrentScene().objects['obj_body.B'].worldPosition.z < -1.8"

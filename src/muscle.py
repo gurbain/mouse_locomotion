@@ -301,16 +301,13 @@ class DampedSpringMuscle(Muscle):
             self.draw_muscle()
             self.n_iter += 1
 
-            self.logger.debug("Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
-                force) + " norm = " + str(force * self.l.normalized()) + "N")
-            self.logger.debug("\t\t\tType = " + f_type)
-            self.logger.debug("\t\t\tFs = " + str(force_s))
-            self.logger.debug("\t\t\tFd = " + str(force_d))
-            self.logger.debug("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
-            self.logger.debug(
-                "\t\t\tG app point 1=" + str(self.app_point_1_world) + " ;G app point 2=" + str(
-                self.app_point_2_world))
-            self.logger.debug("\t\t\tL app point 1=" + str(self.app_point_1) + " ;L app point 2=" + str(self.app_point_2))
+            self.logger.debug("Muscle " + self.name + ":" + str(self.n_iter) + ": Ft = " + str(
+                force) + " - " + str(force * self.l.normalized()) + "N")
+            self.logger.debug("  Type = " + f_type)
+            self.logger.debug("  Fs = " + str(force_s) + " ;  Fd = " + str(force_d))
+            self.logger.debug("  l = " + str(self.l) + " ; l0 = " + str(self.l0))
+            self.logger.debug("  L P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
+            self.logger.debug("  G P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
         else:
             self.logger.warning("Muscle " + self.name + " has been deactivated.")
 
@@ -409,16 +406,15 @@ class DampedSpringReducedTorqueMuscle(Muscle):
             self.draw_muscle()
             self.n_iter += 1
 
-            self.logger.debug("Muscle " + self.name + " iteration " + str(self.n_iter) + ": Force = " + str(
-                force) + " norm = " + str(force * self.l.normalized()) + "N")
-            self.logger.debug("\t\t\tType = " + f_type)
-            self.logger.debug("\t\t\tFs = " + str(force_s))
-            self.logger.debug("\t\t\tFd = " + str(force_d))
-            self.logger.debug("\t\t\tl = " + str(self.l) + " ; l0 = " + str(self.l0))
-            self.logger.debug("\t\t\tL P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
-            self.logger.debug("\t\t\tG P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
-            self.logger.debug("\t\t\t  center O1 = " + str(cg_1) + " ; center O2 = " + str(cg_1))
-            self.logger.debug("\t\t\t  OP 1 = " + str(lever_1_vect) + " ; CG 2 = " + str(lever_2_vect))
-            self.logger.debug("\t\t\tT1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
+            self.logger.debug("Muscle " + self.name + ":" + str(self.n_iter) + ": Ft = " + str(
+                force) + " - " + str(force * self.l.normalized()) + "N")
+            self.logger.debug("  Type = " + f_type)
+            self.logger.debug("  Fs = " + str(force_s) + " ;  Fd = " + str(force_d))
+            self.logger.debug("  l = " + str(self.l) + " ; l0 = " + str(self.l0))
+            self.logger.debug("  L P1 = " + str(self.app_point_1) + " ; L P2 = " + str(self.app_point_2))
+            self.logger.debug("  G P1 = " + str(self.app_point_1_world) + " ; G P2 = " + str(self.app_point_2_world))
+            self.logger.debug("  G O1 = " + str(cg_1) + " ; G O2 = " + str(cg_1))
+            self.logger.debug("  G OP 1 = " + str(lever_1_vect) + " ; G CG 2 = " + str(lever_2_vect))
+            self.logger.debug("  T1 = " + str(torque_1) + " ; T2 = " + str(torque_2))
         else:
             self.logger.warning("Muscle " + self.name + " has been deactivated.")

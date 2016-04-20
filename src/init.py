@@ -57,11 +57,10 @@ if not os.path.exists(LOG_FILE):
     f = open(LOG_FILE, 'w')
     f.close()
 
+configuration = eval(CONFIG_NAME)
 logging.config.fileConfig(root + "/etc/logging.conf",
                           defaults={'logfilename': LOG_FILE, 'simLevel': "DEBUG"})
-logger = logging.getLogger(owner["config"].logger_name)
-
-configuration = eval(CONFIG_NAME)
+logger = logging.getLogger(configuration.logger_name)
 configuration.logger = logger
 configuration.save_path = SAVE_NAME
 
