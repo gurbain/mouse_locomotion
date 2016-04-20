@@ -118,6 +118,7 @@ class Body:
         self.scene = scene_
         self.config = config_
         self.logger = config_.logger
+        self.muscle_type = self.config.muscle_type + "(self.scene, muscle_config)"
         self.name = self.config.body["name"]
 
         # Create 4 legs

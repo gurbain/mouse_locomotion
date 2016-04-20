@@ -102,10 +102,10 @@ class RobotDefConfig(Config):
         self.back_leg_R_muscles = [BR_biceps, BR_triceps, BL_gastro]
 
         # Front Legs
-        FL_biceps = {"name": "F_biceps.L", "debug": INFO, "obj_1": "obj_body", "obj_2": "obj_upper_arm.L",
+        FL_biceps = {"name": "F_biceps.L", "logger": "INFO", "obj_1": "obj_body", "obj_2": "obj_upper_arm.L",
                      "anch_1": [-0.93, -1, 0.48], "anch_2": [-0.01, 0, 0.33], "k": 400,
                      "c": 40, "kc": -5, "kl0": 1, "brain_sig": 1}
-        FR_biceps = {"name": "F_biceps.R", "debug": False, "obj_1": "obj_body", "obj_2": "obj_upper_arm.R",
+        FR_biceps = {"name": "F_biceps.R", "logger": "INFO", "obj_1": "obj_body", "obj_2": "obj_upper_arm.R",
                      "anch_1": [-0.93, 1, 0.48], "anch_2": [-0.01, 0, 0.33], "k": 400,
                      "c": 40, "kc": -5, "kl0": 1, "brain_sig": 1}
         FL_triceps = {"name": "F_triceps.L", "logger": "INFO", "obj_1": "obj_body", "obj_2": "obj_upper_arm.L",
