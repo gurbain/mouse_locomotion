@@ -28,7 +28,7 @@ from body import *
 from config import *
 
 # Blender start
-CONFIG_NAME = "MouseDefConfig()"
+CONFIG_NAME = "RobotVertDefConfig()"
 LOG_NAME = os.getenv("HOME") + "/.log/qSim.log"
 dirname = root + "/save"
 filename = "sim_" + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".qsm"
