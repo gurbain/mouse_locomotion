@@ -36,6 +36,8 @@ class Config:
         self.front_leg_R_muscles = []
         self.brain = dict()
         self.body = dict()
+        self.dist_ref = 20
+        self.power_ref = 1000
 
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
@@ -137,7 +139,7 @@ class DogDefConfig(Config):
                  "anch_1": [-0.59, 0, 1.4], "anch_2": [0.117, 0, -0.26], "k": 2000,
                  "c": 100, "kc": 0, "kl0": 0.8}
         body_muscles = [neck1, neck2]
-        self.body = {"name": "Doggy", "muscles": body_muscles}
+        self.body = {"name": "Doggy", "obj" : "obj_body", "muscles": body_muscles}
 
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
@@ -276,7 +278,7 @@ class DogVertDefConfig(Config):
                  "c": 200, "kc": 0, "kl0": 0.85}
         body_muscles = [neck1, neck2, vert1_u, vert1_d, vert2_u, vert2_d, vert3_u, vert3_d, vert4_u, vert4_d,
                         vert5_u, vert5_d, vert6_u, vert6_d, abdos]
-        self.body = {"name": "Doggy", "muscles": body_muscles}
+        self.body = {"name": "Doggy Vertebrate", "obj" : "obj_body", "muscles": body_muscles}
 
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
@@ -374,7 +376,7 @@ class MouseDefConfig(Config):
                  "anch_1": [-0.59, 0, 1.4], "anch_2": [0.117, 0, -0.26], "k": 2000,
                  "c": 100, "kc": 0, "kl0": 0.8}
         body_muscles = []  # neck1, neck2]
-        self.body = {"name": "Cheesy", "muscles": body_muscles}
+        self.body = {"name": "Cheesy", "obj" : "obj_body", "muscles": body_muscles}
 
     def get_params_list(self):
         """Return a list including all the parameters that can be changed to tune the controller model"""
