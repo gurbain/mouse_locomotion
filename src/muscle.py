@@ -122,7 +122,7 @@ class HillMuscle(Muscle):
     def update(self, **kwargs):
         """Computations are based on D.F.B. Haeufle, M. Günther, A. Bayer, S. Schmitt (2014) \
         Hill-type muscle model with serial damping and eccentric force-velocity relation. Journal of Biomechanics"""
-        if hasattr(kwargs, "l_CE"):
+        if "l_CE" in kwargs:
             l_CE = kwargs["l_CE"]
         else:
             self.logger.error("Muscle " + self.name + " deactivated: l_CE isn't defined." +
@@ -130,7 +130,7 @@ class HillMuscle(Muscle):
             self.active = False
             l_CE = 0
 
-        if hasattr(kwargs, "l_MTC"):
+        if "l_MTC" in kwargs:
             l_MTC = kwargs["l_MTC"]
         else:
             self.logger.error("Muscle " + self.name + " deactivated: l_MTC isn't defined." +
@@ -138,7 +138,7 @@ class HillMuscle(Muscle):
             self.active = False
             l_MTC = 0
 
-        if hasattr(kwargs, "dot_l_MTC"):
+        if "dot_l_MTC" in kwargs:
             dot_l_MTC = kwargs["dot_l_MTC"]
         else:
             self.logger.error("Muscle " + self.name + " deactivated: dot_l_MTC isn't defined." +
@@ -146,7 +146,7 @@ class HillMuscle(Muscle):
             self.active = False
             dot_l_MTC = 0
 
-        if hasattr(kwargs, "q"):
+        if "q" in kwargs:
             q = kwargs["q"]
         else:
             self.logger.error("Muscle " + self.name + " deactivated: q isn't defined." +
@@ -256,8 +256,8 @@ class DampedSpringMuscle(Muscle):
         """Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
         fixing manually l0"""
 
-        if hasattr(kwargs, "ctrl_sig"):
-            ctrl_sig = kwargs["ctrl_sig"]
+        if "ctrl_sig" in kwargs:
+            self.ctrl_sig = kwargs["ctrl_sig"]
         else:
             ctrl_sig = None
 
@@ -351,7 +351,7 @@ class DampedSpringReducedTorqueMuscle(Muscle):
         """Update and apply forces on the objects connected to the spring. The spring can be controlled in length by \
         fixing manually l0"""
 
-        if hasattr(kwargs, "ctrl_sig"):
+        if "ctrl_sig" in kwargs:
             ctrl_sig = kwargs["ctrl_sig"]
         else:
             ctrl_sig = None
