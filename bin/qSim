@@ -37,7 +37,7 @@ class SimCli(cli.Application):
 
     # Default CLI application options
     DEF_OPT = {"blender_path": "Blender2.77/", "blender_model": "dog_vert.blend", "root_dir": root,
-               "config_name": "DogVertDefConfig", "sim_type": "run", "registry": False, "service": False,
+               "config_name": "DogVertDefConfig", "sim_type": "RUN", "registry": False, "service": False,
                "local" : False, "logfile": os.getenv("HOME") + "/.log/qSim.log", "fullscreen": False, 
                "save": False}
     opt = dict()
@@ -117,9 +117,9 @@ class SimCli(cli.Application):
 
             # Else, start chosen simulation
             else:
-                if self.opt["sim_type"] == "brain_opti":
+                if self.opt["sim_type"] == "BRAIN":
                     s.brain_opti_sim()
-                elif self.opt["sim_type"] == "muscle_opti":
+                elif self.opt["sim_type"] == "MUSCLE":
                     s.brain_opti_sim()
                 else:
                     s.run_sim()
