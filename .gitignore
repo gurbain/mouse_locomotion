@@ -1,8 +1,8 @@
 .directory
 
 # Ignore python compiled files
-src/__pycache__/
-src/*.pyc
+*__pycache__/
+*.pyc
 
 # Ignore autosave and useless blender models
 mdl/*.blend1
